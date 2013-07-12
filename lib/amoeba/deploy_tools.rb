@@ -2,9 +2,7 @@ require 'optparse'
 require 'ostruct'
 
 module Amoeba::DeployTools
-
   module Commands
-
     def init(url)
       if Dir.exists('.amoeba')
         STDERR.puts ".amoeba directory already exists"
@@ -39,7 +37,6 @@ module Amoeba::DeployTools
   end
 
   module Runner
-
     def self.run(args)
       unless command = args.shift and instance_methods(false).include? command
         command = :help
