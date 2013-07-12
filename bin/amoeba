@@ -1,0 +1,5 @@
+#!/usr/bin/env ruby
+
+require 'amoeba/deploy_tools'
+
+exit Amoeba::DeployTools::Runner.run(ARGV)
