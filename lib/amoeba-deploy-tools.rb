@@ -1,7 +1,6 @@
 require 'optparse'
-require 'ostruct'
 
-module Amoeba::DeployTools
+module AmoebaDeployTools
   module Commands
     def init(url)
       if Dir.exists('.amoeba')
