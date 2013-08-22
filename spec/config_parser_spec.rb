@@ -1,5 +1,4 @@
 require 'spec_helper'
-require 'amoeba_deploy_tools/config_parser'
 
 describe ConfigParser do
   it 'correctly parses subsection names' do

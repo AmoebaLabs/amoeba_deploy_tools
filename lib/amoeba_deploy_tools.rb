@@ -1,63 +1,108 @@
-require 'optparse'
+require 'amoeba_deploy_tools/config_parser'
+require 'amoeba_deploy_tools/helpers'
 
-module AmoebaDeployTools
+class AmoebaDeployTools
   module Commands
-    def init(url)
+    def init(url=nil)
       if Dir.exists('.amoeba')
-        STDERR.puts ".amoeba directory already exists"
+        STDERR.puts '.amoeba directory already exists'
         return 1
       end
 
-      system "git clone #{url} .amoeba"
-
-      File.new(cfg, 'w') unless File.exists? cfg='.amoeba/config'
+      Dir.mkdir '.amoeba'
+      config = ConfigParser.new
+      config.kitchen.default.url = url if url 
+      config.save(filename: '.amoeba/config')
     end
 
     def refresh
     end
 
-    def provision(*node)
+    def provision(node)
     end
 
-    def deploy(*node)
+    def deploy(node)
     end
 
-    def update(*node)
+    def update(node)
     end
 
-    def cleanup(*node)
+    def cleanup(node)
     end
 
-    def exec(*node)
+    def exec(node)
     end
 
-    def shell(*node)
+    def shell(node)
+    end
+
+    def help(*a, **kw)
+      puts dedent %{
+        Usage: amoeba <command>
+
+        Possible commands:
+      }
+      puts indent Commands.instance_methods.join("\n")
+
+      1
     end
   end
 
-  module Runner
-    def self.run(args)
-      unless command = args.shift and instance_methods(false).include? command
-        command = :help
-      end
+  include Commands
 
-      new(args).send(command)
+  def initialize(command=:help, *args, **kwargs)
+    params = method(command).parameters
+    status = params.count > 0 ? send(command, *args, **kwargs) : send(command)
+    exit status || 0
+  rescue ArgumentError => e
+    STDERR.puts e
+    exit 1
+  end
+
+  def self.run(args)
+    unless command = args.shift and Commands.instance_methods(false).include? command
+      command = :help
     end
 
-    protected
+    pargs, kwargs = parse_opts(args)
+    new(command, *pargs, **kwargs)
+  end
 
-    def initialize(args)
-      @ARGV = args
-    end
+  def self.parse_opts(args)
+    pargs  = []
+    kwargs = {}
+    last_flag = nil
 
-    def options(opt_hash)
-      OptionParser.new do |opts|
-        opts.banner = "Usage: amoeba <command> [<args>]"
-
-        opt_hash.map do |o, d|
-          opts.on *d { |v| self.instance_variable_set(o, v) }
+    for arg in args
+      if arg =~ /^--?([^=]+)$/
+        if last_flag
+          kwargs[last_flag] = true
+          last_flag = nil
         end
-      end.parse @ARGV
+
+        last_flag = $1.to_sym
+      elsif arg =~ /^--?([^=]+)=(.*)$/
+        if last_flag
+          kwargs[last_flag] = true
+          last_flag = nil
+        end
+
+        kwargs[$1.to_sym] = $2
+      else
+        if last_flag
+          kwargs[last_flag.to_sym] = arg
+          last_flag = nil
+        else
+          pargs.push(arg)
+        end
+      end
     end
+
+    if last_flag
+      kwargs[last_flag] = true
+      last_flag = nil
+    end
+
+    [pargs, kwargs]
   end
 end

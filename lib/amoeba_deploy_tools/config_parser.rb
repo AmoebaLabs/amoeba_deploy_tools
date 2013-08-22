@@ -1,5 +1,4 @@
 require 'inifile'
-require 'fileutils'
 require 'hashie/mash'
 
 class ConfigParser < Hashie::Mash
@@ -9,6 +8,8 @@ class ConfigParser < Hashie::Mash
 
   def restore(opts={})
     @filename = opts[:filename] || @filename
+
+    FileUtils.touch @filename unless File.exists? @filename
     ini_conf = IniFile.load(@filename, opts)
     self.clear
 

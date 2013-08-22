@@ -2,4 +2,4 @@
 
 require 'amoeba_deploy_tools'
 
-exit AmoebaDeployTools::Runner.run(ARGV)
+AmoebaDeployTools.run(ARGV)
