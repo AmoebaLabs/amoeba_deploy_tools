@@ -78,6 +78,31 @@ describe ConfigParser do
     end
   end
 
+  it 'correctly indents when writing out to a file' do
+    config_content = %{
+      [a]
+          b.c = foo
+      [a "b"]
+          d = garply
+      [foo "buz"]
+          biz = booz
+    }
+    with_tmpfile dedent(config_content) do |f, fh|
+      config = ConfigParser.load(f)
+      config.save indent: true
+
+      expect(fh.open.read).to eq(dedent %{
+        [a "b"]
+            c = foo
+            d = garply
+
+        [foo "buz"]
+            biz = booz
+
+      })
+    end
+  end
+
   def loadconfig(content)
     with_tmpfile dedent(content) do |f|
       ConfigParser.load(f)

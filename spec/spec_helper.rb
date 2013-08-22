@@ -13,7 +13,7 @@ end
 
 def dedent(s)
   indent = s.split("\n").reject {|l| l =~ /^\s*$/}.map {|l| l.index /\S/ }.min
-  s.sub(/^\n/, '').gsub(/^ {#{indent}}/, '')
+  s.sub(/^\n/, '').gsub(/ +$/, '').gsub(/^ {#{indent}}/, '')
 end
 
 

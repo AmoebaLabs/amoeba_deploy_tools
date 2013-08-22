@@ -54,7 +54,20 @@ class ConfigParser < Hashie::Mash
         end
       end
 
-      ini_conf.write(opts.merge filename: @filename)
+      if opts[:indent]
+        indent = ' ' * 4
+        new_conf = IniFile.new
+        ini_conf.sections.each do |section|
+          ini_conf[section].each do |k, v|
+            new_conf[section][indent + k] = v
+          end
+        end
+
+        new_conf.write(opts.merge filename: @filename)
+      else
+        ini_conf.write(opts.merge filename: @filename)
+      end
+
       self
     end
   end
