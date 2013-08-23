@@ -1,22 +1,16 @@
+require 'hashie'
 
 class AmoebaDeployTools
   class Amoeba < Command
     def init(url=nil)
-      if Dir.exists? '.amoeba'
-        STDERR.puts '.amoeba directory already exists'
-        return 1
-      end
-
       if url
         system %W{git clone #{url} .amoeba}
+        @config.kitchen!.url = url
       else
         Dir.mkdir '.amoeba'
       end
 
-      @config.kitchen!.default!.tap {|k| k.url = url if url }
       @config.save
-
-      STDERR.puts 'created .amoeba/config'
     end
 
     def sync
@@ -70,8 +64,19 @@ class AmoebaDeployTools
     end
 
     class App < Command
-      def init
+      def self.require_node
+        node_name = @argv.shift || @config.node.default
+        node_filename = ".amoeba/nodes/#{node_name}.json"
+        parse_opts(@argv)
+
+        if node_name.nil? || !File.exists?(node_filename)
+          raise 'Could not find node JSON file.'
+        end
+
+        @node = Hashie::Mash.new(JSON.parse(File.read(node_filename)))
       end
+
+      before {require_node}
 
       def deploy
         cap :deploy
@@ -81,6 +86,8 @@ class AmoebaDeployTools
       end
 
       def capfile
+        app = @node.application
+        sudo(@node.name, "cat ~#{app.name}/shared/config/Capfile")
       end
 
       def exec

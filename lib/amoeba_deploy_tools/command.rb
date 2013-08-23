@@ -12,9 +12,11 @@ class AmoebaDeployTools
       parse_opts(argv)
       load_config
 
+      @before_hooks.each {|h| h.call}
       params = method(@subcmd).parameters
       args = [*@pargs].concat(params.flatten.include?(:keyrest) ? [@kwargs] : [])
       status = params.count > 0 ? send(@subcmd, *args) : send(@subcmd)
+      @after_hooks.each {|h| h.call}
     rescue => e
       STDERR.puts "#{e.class}: #{e.message}", e.bt
       status = 1
@@ -65,8 +67,8 @@ class AmoebaDeployTools
     end
 
     def load_config
-      @config = ConfigParser.new
-      @config.options(filename: '.amoeba/config', indent: true)
+      @config = Config.new
+      @config.options(filename: '.amoeba.yml')
       @config.restore || @config
     end
 
@@ -106,6 +108,16 @@ class AmoebaDeployTools
       }), indent(self.class.subcommands.keys.join("\n"))
 
       false
+    end
+
+    def self.before(&blk)
+      @before_hooks ||= []
+      @before_hooks << blk
+    end
+
+    def self.after(&blk)
+      @after_hooks ||= []
+      @after_hooks << blk
     end
   end
 end

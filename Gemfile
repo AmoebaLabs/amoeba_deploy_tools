@@ -1,7 +1,6 @@
 source 'https://rubygems.org'
 ruby '2.0.0'
 
-gem 'inifile', '~> 2.0.2'
 gem 'hashie', '~> 2.0.5'
 
 group :test do

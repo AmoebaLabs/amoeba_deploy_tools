@@ -3,7 +3,6 @@ GEM
   specs:
     diff-lcs (1.2.4)
     hashie (2.0.5)
-    inifile (2.0.2)
     rspec (2.14.1)
       rspec-core (~> 2.14.0)
       rspec-expectations (~> 2.14.0)
@@ -18,5 +17,4 @@ PLATFORMS
 
 DEPENDENCIES
   hashie (~> 2.0.5)
-  inifile (~> 2.0.2)
   rspec (~> 2.14.1)
