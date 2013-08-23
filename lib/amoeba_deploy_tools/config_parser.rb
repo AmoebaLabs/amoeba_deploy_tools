@@ -54,11 +54,13 @@ class ConfigParser < Hashie::Mash
       end
     end if prev_conf
 
-    conf.reject {|k, v| v.empty?}.each do |k1, v1|
-      v1.each do |k2, v2|
+    conf.reject {|k, v| !v.class.method_defined?(:empty?) || v.empty? }.each do |k1, v1|
+      conf.delete(k1).each do |k2, v2|
         @ini_conf["#{k1} #{k2.inspect}"].merge!(v2.flatten)
       end
     end
+
+    @ini_conf.merge! conf
 
     if opts[:indent]
       indent = ' ' * 4

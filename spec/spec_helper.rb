@@ -1,3 +1,7 @@
-require 'amoeba_deploy_tools/helpers'
-require 'amoeba_deploy_tools/config_parser'
 require 'amoeba_deploy_tools'
+
+RSpec.configure do |config|
+  config.treat_symbols_as_metadata_keys_with_true_values = true
+  config.order = 'random'
+  config.tty = true
+end

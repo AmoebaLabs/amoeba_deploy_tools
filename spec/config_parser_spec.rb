@@ -30,6 +30,47 @@ describe ConfigParser do
     expect(config.to_hash).to eq({ 'foo' => { 'bar' => { 'baz' => 'garply' } } })
   end
 
+  context 'when a section is empty' do
+    it 'correctly handles empty sections' do
+      config = ConfigParser.new
+      config.a!
+
+      with_tmpfile do |f, fh|
+        config.save(filename: f)
+        expect(fh.open.read).to eq(dedent %{
+          [a]
+
+        }.gsub(/ +/, ' '))
+      end
+    end
+
+    it 'correctly handles empty subsections' do
+      config = ConfigParser.new
+      config.a!.b!
+
+      with_tmpfile do |f, fh|
+        config.save(filename: f)
+        expect(fh.open.read).to eq(dedent %{
+          [a "b"]
+
+        }.gsub(/ +/, ' '))
+      end
+    end
+
+    it 'works correctly when indent option is set' do
+      config = ConfigParser.new
+      config.a!.b!
+
+      with_tmpfile do |f, fh|
+        config.save(filename: f, indent: true)
+        expect(fh.open.read).to eq(dedent %{
+          [a "b"]
+
+        }.gsub(/ +/, ' '))
+      end
+    end
+  end
+
   it 'correctly flattens keys using dot-notation' do
     config = ConfigParser.new
     config.foo!.bar!.baz = 'quux'

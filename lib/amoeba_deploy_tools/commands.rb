@@ -10,7 +10,7 @@ class AmoebaDeployTools
       Dir.mkdir '.amoeba'
 
       config = ConfigParser.new
-      config.kitchen!.default!.url = url if url
+      config.kitchen!.default!.tap {|k| k.url = url if url }
       config.save(filename: '.amoeba/config', indent: true)
 
       STDERR.puts 'created .amoeba/config'
@@ -19,6 +19,8 @@ class AmoebaDeployTools
 
   class Amoeba::Kitchen < Command
     def add(name='default', url)
+      @config.kitchen!.merge!(name => url)
+      @config.save
     end
   end
 
