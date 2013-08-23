@@ -2,15 +2,23 @@ require 'inifile'
 require 'hashie/mash'
 
 class ConfigParser < Hashie::Mash
-  def self.load(filename, opts={})
-    new.restore(opts.merge filename: filename)
+  def self.load(filename, **opts)
+    new.tap {|c| c.options(filename: filename, **opts) }.restore
   end
 
-  def restore(opts={})
-    @filename = opts[:filename] || @filename
+  def options(**opts)
+    @opts ||= { encoding: 'UTF-8', comment: ';#' }
+    @opts.merge! opts
+  end
 
-    FileUtils.touch @filename unless File.exists?(@filename) || !opts[:create]
-    @ini_conf = IniFile.load(@filename, opts)
+  def restore(**opts)
+    options(opts)
+
+    filename = options[:filename]
+    return unless filename
+
+    FileUtils.touch filename unless File.exists?(filename) || !options[:create]
+    @ini_conf = IniFile.load(filename, options)
     return unless @ini_conf
     self.clear
 
@@ -34,12 +42,14 @@ class ConfigParser < Hashie::Mash
     self
   end
 
-  def save(opts={})
-    @filename = opts[:filename] || @filename
-    return unless  @filename
+  def save(**opts)
+    options(opts)
 
-    FileUtils.touch @filename unless File.exists? @filename
-    prev_conf = @ini_conf.restore(filename: @filename) if @ini_conf
+    filename = options[:filename]
+    return unless filename
+
+    FileUtils.touch filename unless File.exists? filename
+    prev_conf = @ini_conf.restore(options) if @ini_conf
 
     conf = dup
     @ini_conf = IniFile.new
@@ -66,7 +76,7 @@ class ConfigParser < Hashie::Mash
 
     @ini_conf.merge! conf
 
-    if opts[:indent]
+    if options[:indent]
       indent = ' ' * 4
       fmt_conf = IniFile.new
       @ini_conf.sections.each do |section|
@@ -75,9 +85,9 @@ class ConfigParser < Hashie::Mash
         end
       end
 
-      fmt_conf.save(opts.merge filename: @filename)
+      fmt_conf.save(options)
     else
-      @ini_conf.save(opts.merge filename: @filename)
+      @ini_conf.save(options)
     end
 
     self
