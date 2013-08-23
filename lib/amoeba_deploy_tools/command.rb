@@ -40,17 +40,24 @@ class AmoebaDeployTools
           end
 
           if $2
-            @kwargs[$1.to_sym] = $2
+            if @kwargs[$1.to_sym] == Array
+              @kwargs[$1.to_sym] << $2
+            else
+              @kwargs[$1.to_sym] = $2
+            end
           else
             last_flag = $1.to_sym
           end
-        else
-          if last_flag
-            @kwargs[last_flag.to_sym] = arg
-            last_flag = nil
+        elsif last_flag
+          if @kwargs[$1.to_sym] == Array
+            @kwargs[last_flag.to_sym] << arg
           else
-            @pargs.push(arg)
+            @kwargs[last_flag.to_sym] = arg
           end
+
+          last_flag = nil
+        else
+          @pargs.push(arg)
         end
       end
 
@@ -58,7 +65,15 @@ class AmoebaDeployTools
     end
 
     def load_config
-      @config = ConfigParser.load('.amoeba/config')
+      @config = ConfigParser.new
+      @config.options(filename: '.amoeba/config', indent: true)
+      @config.restore || @config
+    end
+
+    def require_kitchen
+      unless Dir.exists? '.amoeba'
+        raise 'Missing kitchen' and exit 1
+      end
     end
 
     def self.basecmd

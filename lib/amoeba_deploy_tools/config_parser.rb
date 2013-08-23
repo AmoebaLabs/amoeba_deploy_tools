@@ -68,7 +68,7 @@ class ConfigParser < Hashie::Mash
       end
     end if prev_conf
 
-    conf.reject {|k, v| !v.class.method_defined?(:empty?) || v.empty? }.each do |k1, v1|
+    conf.reject {|k, v| v.class != self.class || v.empty? }.each do |k1, v1|
       conf.delete(k1).each do |k2, v2|
         if v2.class <= self.class
           @ini_conf["#{k1} #{k2.inspect}"].merge!(v2.flatten)

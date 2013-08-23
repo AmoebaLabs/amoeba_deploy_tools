@@ -7,26 +7,87 @@ class AmoebaDeployTools
         return 1
       end
 
-      Dir.mkdir '.amoeba'
+      if url
+        system %W{git clone #{url} .amoeba}
+      else
+        Dir.mkdir '.amoeba'
+      end
 
-      config = ConfigParser.new
-      config.kitchen!.default!.tap {|k| k.url = url if url }
-      config.save(filename: '.amoeba/config', indent: true)
+      @config.kitchen!.default!.tap {|k| k.url = url if url }
+      @config.save
 
       STDERR.puts 'created .amoeba/config'
     end
-  end
 
-  class Amoeba::Kitchen < Command
-    def add(name='default', url)
-      @config.kitchen!.merge!(name => url)
+    def sync
+    end
+
+    def update
+    end
+
+    def config(*args, set: [], get: [])
+      require_kitchen
+
+      args.each do |a|
+        if a =~ /^(\w[-.\w]*)=(\w+)$/
+          @config[$1] = $2
+        else
+          puts @config[a]
+        end
+      end
+
+      set.each do |k, v|
+        @config[k] = v
+      end
+
+      get.each do |k|
+        puts @config[k]
+      end
+
       @config.save
     end
-  end
 
-  class Amoeba::Node < Command
-  end
+    class Node < Command
+      def provision
+      end
 
-  class Amoeba::App < Command
+      def push
+      end
+
+      def list
+        Dir.glob(".amoeba/nodes/*.json").map {|n| File.basename(n)}
+      end
+
+      def exec(cmd, *args)
+      end
+
+      def shell
+      end
+
+      def sudo(cmd, *args)
+        exec(:sudo, cmd, *args)
+      end
+    end
+
+    class App < Command
+      def init
+      end
+
+      def deploy
+        cap :deploy
+      end
+
+      def cap(cmd)
+      end
+
+      def capfile
+      end
+
+      def exec
+      end
+
+      def shell
+      end
+    end
   end
 end
