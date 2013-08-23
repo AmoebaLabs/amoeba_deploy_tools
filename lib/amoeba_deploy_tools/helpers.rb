@@ -21,12 +21,20 @@ def indent(s, indent=4)
   s.gsub(/^/, ' ' * indent)
 end
 
-def require_all(path)
-  if Pathname.new(path).relative?
-    Dir.glob File.join(path, '*.rb')
+def require_dir(path)
+  require_glob(File.join(path, '*.rb'))
+end
+
+def require_glob(glob_path)
+  basedir = File.dirname(caller(1).first.split(':')[0])
+  if Pathname.new(glob_path).relative?
+    Dir.glob File.absolute_path(glob_path, basedir)
   else
-    $LOAD_PATH.find {|p| Dir.glob File.join(p, path, '*.rb')}
-  end.map {|f| require Dir.absolute_path(f)}
+    files = []
+    $LOAD_PATH.find {|p| !(files = Dir.glob File.join(p, glob_path)).empty? }
+
+    files
+  end.map {|f| require File.absolute_path(f, basedir)}
 end
 
 class Exception
