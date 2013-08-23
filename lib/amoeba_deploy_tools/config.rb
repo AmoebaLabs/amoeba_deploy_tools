@@ -9,18 +9,17 @@ class AmoebaDeployTools
     end
 
     def options(**opts)
-      @opts ||= {}
+      @opts ||= { format: :yaml }
       @opts.merge! opts
     end
 
     def restore(**opts)
       options(opts)
 
-      filename = options[:filename]
-      return unless filename
+      return unless filename = options[:filename]
 
       File.open(filename) do |fh|
-        self.clear.deep_merge! YAML.load(fh.read)
+        self.clear.deep_merge! deserialize(fh.read)
       end
 
       self
@@ -31,11 +30,10 @@ class AmoebaDeployTools
     def save(**opts)
       options(opts)
 
-      filename = options[:filename]
-      return unless filename
+      return unless filename = options[:filename]
 
       File.open(filename) do |fh|
-        fh.write(YAML.dump(self.to_hash))
+        fh.write(serialize(self.to_hash))
       end
 
       self
@@ -45,6 +43,21 @@ class AmoebaDeployTools
 
     def to_s
       to_hash.to_s
+    end
+
+    protected
+
+    @@formats = {
+      json: JSON
+      yaml: YAML
+    }
+
+    def serialize(d)
+      @@formats[options[:format]].dump(d)
+    end
+
+    def deserialize(d)
+      @@formats[options[:format]].load(d)
     end
   end
 end

@@ -1,4 +1,3 @@
-require 'hashie'
 
 class AmoebaDeployTools
   class Amoeba < Command
@@ -43,10 +42,34 @@ class AmoebaDeployTools
     end
 
     class Node < Command
-      def provision
+      def bootstrap
+        require_node
+
+        knife_solo :prepare, 'bootstrap-version' => '11.4.2'
+
+        refresh
+
+        knife_solo :cook do
+          { run_list: ['role[base]'] }
+        end
+
+        pull
       end
 
       def push
+        require_node
+
+        knife_solo :cook
+
+        pull
+      end
+
+      def pull
+        require_node
+
+        raw_json = `ssh deploy@#{@node.deployment.host} 'sudo cat ~deploy/node.json'`
+
+        DataBag.new(:nodes, @kitchen)[@node.name] = JSON.load raw_json
       end
 
       def list
@@ -62,6 +85,13 @@ class AmoebaDeployTools
       def sudo(cmd, *args)
         exec(:sudo, cmd, *args)
       end
+
+      def knife_solo(cmd, *args)
+        if block_given?
+        else
+          system %W{knife solo --node-name #{@node.name}} + args + [@node.filename]
+        end
+      end
     end
 
     class App < Command
@@ -75,6 +105,8 @@ class AmoebaDeployTools
       end
 
       def capfile
+        require_node
+
         app = @node.application
         sudo(@node.name, "cat ~#{app.name}/shared/config/Capfile")
       end
@@ -84,21 +116,6 @@ class AmoebaDeployTools
 
       def shell
       end
-
-      private
-
-      def require_node
-        node_name = @argv.shift || @config.node.default
-        node_filename = ".amoeba/nodes/#{node_name}.json"
-        parse_opts(@argv)
-
-        if node_name.nil? || !File.exists?(node_filename)
-          raise 'Could not find node JSON file.'
-        end
-
-        @node = Hashie::Mash.new(JSON.parse(File.read(node_filename)))
-      end
-
     end
   end
 end

@@ -73,8 +73,32 @@ class AmoebaDeployTools
     end
 
     def require_kitchen
-      unless Dir.exists? '.amoeba'
-        raise 'Missing kitchen' and exit 1
+      return @kitchen if @kitchen
+
+      @kitchen = '.amoeba'
+      unless Dir.exists? @kitchen
+        raise 'Could not find amoeba kitchen'
+      end
+    end
+
+    def inside_kitchen
+      Dir.chdir(require_kitchen) { yield }
+    end
+
+    def require_node
+      return @node if @node
+
+      node_name = @argv.shift || @config.node.default
+      node_filename = "nodes/#{node_name}.json"
+      parse_opts(@argv)
+
+      inside_kitchen do
+        if node_name.nil? || !File.exists?(node_filename)
+          raise 'Could not find node JSON file.'
+        end
+
+        @node = Config.load(node_filename, format: :json)
+        @node.tap {|n| n.filename = node_filename } if @node
       end
     end
 
