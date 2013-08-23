@@ -48,8 +48,12 @@ class ConfigParser < Hashie::Mash
       if section =~ /^(\S+)\s+"((?:\"|[^"])+)"/
         k1 = $1
         k2 = $2.gsub('\"', '"')
-        if conf.key? k1 and conf[k1].key? k2
-          @ini_conf[section].merge!(conf[k1].delete(k2).flatten)
+        if conf.key? k1
+          if conf[k1].key? k2
+            @ini_conf[section].merge!(conf[k1].delete(k2).flatten)
+          end
+
+          conf.delete(k1) if conf[k1].empty?
         end
       end
     end if prev_conf
