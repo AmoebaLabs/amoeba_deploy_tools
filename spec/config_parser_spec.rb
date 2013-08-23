@@ -109,6 +109,20 @@ describe ConfigParser do
     end
   end
 
+  it 'correctly handles triples' do
+    config = ConfigParser.new
+    config.a!.b = 'c'
+
+    with_tmpfile do |f, fh|
+      config.save(filename: f)
+      expect(fh.open.read).to eq(dedent %{
+        [a]
+            b = c
+
+      }.gsub(/ +/, ' '))
+    end
+  end
+
   it 'correctly flattens keys using dot-notation' do
     config = ConfigParser.new
     config.foo!.bar!.baz = 'quux'
