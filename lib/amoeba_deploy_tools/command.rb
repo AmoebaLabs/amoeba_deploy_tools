@@ -13,7 +13,8 @@ class AmoebaDeployTools
       load_config
 
       params = method(@subcmd).parameters
-      status = params.count > 0 ? send(@subcmd, *@pargs, **@kwargs) : send(@subcmd)
+      args = [*@pargs].concat(params.flatten.include?(:keyrest) ? [@kwargs] : [])
+      status = params.count > 0 ? send(@subcmd, *args) : send(@subcmd)
     rescue => e
       STDERR.puts "#{e.class}: #{e.message}", e.bt
       status = 1
