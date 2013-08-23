@@ -30,13 +30,64 @@ describe ConfigParser do
     expect(config.to_hash).to eq({ 'foo' => { 'bar' => { 'baz' => 'garply' } } })
   end
 
-  context 'when a section is empty' do
+  it 'correctly handles empty sections' do
+    config = ConfigParser.new
+    config.a!
+
+    with_tmpfile do |f, fh|
+      config.save(filename: f)
+      expect(fh.open.read).to eq(dedent %{
+        [a]
+
+      }.gsub(/ +/, ' '))
+    end
+  end
+
+  it 'correctly handles empty subsections' do
+    config = ConfigParser.new
+    config.a!.b!
+
+    with_tmpfile do |f, fh|
+      config.save(filename: f)
+      expect(fh.open.read).to eq(dedent %{
+        [a "b"]
+
+      }.gsub(/ +/, ' '))
+    end
+  end
+
+  context 'with indent option set' do
+    it 'correctly indents when writing out to a file' do
+      config_content = %{
+        [a]
+            b.c = foo
+        [a "b"]
+            d = garply
+        [foo "buz"]
+            biz = booz
+      }
+      with_tmpfile dedent(config_content) do |f, fh|
+        config = ConfigParser.load(f)
+        config.save indent: true
+
+        expect(fh.open.read).to eq(dedent %{
+          [a "b"]
+              c = foo
+              d = garply
+
+          [foo "buz"]
+              biz = booz
+
+        })
+      end
+    end
+
     it 'correctly handles empty sections' do
       config = ConfigParser.new
       config.a!
 
       with_tmpfile do |f, fh|
-        config.save(filename: f)
+        config.save(filename: f, indent: true)
         expect(fh.open.read).to eq(dedent %{
           [a]
 
@@ -45,19 +96,6 @@ describe ConfigParser do
     end
 
     it 'correctly handles empty subsections' do
-      config = ConfigParser.new
-      config.a!.b!
-
-      with_tmpfile do |f, fh|
-        config.save(filename: f)
-        expect(fh.open.read).to eq(dedent %{
-          [a "b"]
-
-        }.gsub(/ +/, ' '))
-      end
-    end
-
-    it 'works correctly when indent option is set' do
       config = ConfigParser.new
       config.a!.b!
 
@@ -115,31 +153,6 @@ describe ConfigParser do
             baaz = guux
 
       }.gsub(/ +/, ' '))
-    end
-  end
-
-  it 'correctly indents when writing out to a file' do
-    config_content = %{
-      [a]
-          b.c = foo
-      [a "b"]
-          d = garply
-      [foo "buz"]
-          biz = booz
-    }
-    with_tmpfile dedent(config_content) do |f, fh|
-      config = ConfigParser.load(f)
-      config.save indent: true
-
-      expect(fh.open.read).to eq(dedent %{
-        [a "b"]
-            c = foo
-            d = garply
-
-        [foo "buz"]
-            biz = booz
-
-      })
     end
   end
 

@@ -80,9 +80,7 @@ class ConfigParser < Hashie::Mash
       indent = ' ' * 4
       fmt_conf = IniFile.new
       @ini_conf.sections.each do |section|
-        @ini_conf[section].each do |k, v|
-          fmt_conf[section][indent + k] = v
-        end
+        fmt_conf[section] = Hash[@ini_conf[section].map {|k, v| [indent + k, v] }]
       end
 
       fmt_conf.save(options)
