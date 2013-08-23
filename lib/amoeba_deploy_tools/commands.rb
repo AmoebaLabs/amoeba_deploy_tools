@@ -1,4 +1,3 @@
-require_dir './commands'
 
 class AmoebaDeployTools
   class Amoeba < Command
@@ -13,5 +12,16 @@ class AmoebaDeployTools
       config.kitchen.default.url = url if url
       config.save(filename: '.amoeba/config')
     end
+  end
+
+  class Amoeba::Kitchen < Command
+    def add(name='default', url)
+    end
+  end
+
+  class Amoeba::Node < Command
+  end
+
+  class Amoeba::App < Command
   end
 end
