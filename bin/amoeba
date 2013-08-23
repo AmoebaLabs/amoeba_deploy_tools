@@ -2,4 +2,4 @@
 
 require 'amoeba_deploy_tools'
 
-AmoebaDeployTools.run(ARGV)
+AmoebaDeployTools::Commands::Amoeba.new(ARGV)
