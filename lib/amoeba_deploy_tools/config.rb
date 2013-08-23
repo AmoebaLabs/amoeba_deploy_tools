@@ -1,4 +1,5 @@
 require 'yaml'
+require 'fileutils'
 require 'hashie/mash'
 
 class AmoebaDeployTools
@@ -23,6 +24,8 @@ class AmoebaDeployTools
       end
 
       self
+    rescue Errno::ENOENT
+      FileUtils.touch(filename) and retry if options[:create]
     end
 
     def save(**opts)
@@ -36,6 +39,8 @@ class AmoebaDeployTools
       end
 
       self
+    rescue Errno::ENOENT
+      FileUtils.touch(filename) and retry if options[:create]
     end
 
     def to_s

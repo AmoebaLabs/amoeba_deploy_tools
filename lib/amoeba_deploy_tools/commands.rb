@@ -7,6 +7,7 @@ class AmoebaDeployTools
         system %W{git clone #{url} .amoeba}
         @config.kitchen!.url = url
       else
+        STDERR.puts 'Creating new kitchen in .amoeba'
         Dir.mkdir '.amoeba'
       end
 
@@ -64,18 +65,6 @@ class AmoebaDeployTools
     end
 
     class App < Command
-      def self.require_node
-        node_name = @argv.shift || @config.node.default
-        node_filename = ".amoeba/nodes/#{node_name}.json"
-        parse_opts(@argv)
-
-        if node_name.nil? || !File.exists?(node_filename)
-          raise 'Could not find node JSON file.'
-        end
-
-        @node = Hashie::Mash.new(JSON.parse(File.read(node_filename)))
-      end
-
       before {require_node}
 
       def deploy
@@ -95,6 +84,21 @@ class AmoebaDeployTools
 
       def shell
       end
+
+      private
+
+      def require_node
+        node_name = @argv.shift || @config.node.default
+        node_filename = ".amoeba/nodes/#{node_name}.json"
+        parse_opts(@argv)
+
+        if node_name.nil? || !File.exists?(node_filename)
+          raise 'Could not find node JSON file.'
+        end
+
+        @node = Hashie::Mash.new(JSON.parse(File.read(node_filename)))
+      end
+
     end
   end
 end

@@ -12,13 +12,13 @@ class AmoebaDeployTools
       parse_opts(argv)
       load_config
 
-      @before_hooks.each {|h| h.call}
+      self.class.before_hooks.each {|h| instance_eval &h }
       params = method(@subcmd).parameters
       args = [*@pargs].concat(params.flatten.include?(:keyrest) ? [@kwargs] : [])
       status = params.count > 0 ? send(@subcmd, *args) : send(@subcmd)
-      @after_hooks.each {|h| h.call}
+      self.class.after_hooks.each {|h| instance_eval &h }
     rescue => e
-      STDERR.puts "#{e.class}: #{e.message}", e.bt
+      STDERR.puts "#{e.class}: #{e.message}", (@kwargs[:debug] ? e.bt : [])
       status = 1
     ensure
       exit case (status)
@@ -108,6 +108,14 @@ class AmoebaDeployTools
       }), indent(self.class.subcommands.keys.join("\n"))
 
       false
+    end
+
+    def self.before_hooks
+      @before_hooks ||= []
+    end
+
+    def self.after_hooks
+      @after_hooks ||= []
     end
 
     def self.before(&blk)
