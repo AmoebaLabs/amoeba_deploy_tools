@@ -10,6 +10,8 @@ class AmoebaDeployTools
 
       @subcmd = self.class.subcommand_methods.include?(argv.first.to_sym) ? argv.shift.to_sym : :help
       parse_opts(argv)
+      load_config
+
       params = method(@subcmd).parameters
       status = params.count > 0 ? send(@subcmd, *@pargs, **@kwargs) : send(@subcmd)
     rescue => e
@@ -24,6 +26,7 @@ class AmoebaDeployTools
     end
 
     def parse_opts(argv)
+      @argv   = argv
       @pargs  = []
       @kwargs = {}
       last_flag = nil
@@ -51,6 +54,10 @@ class AmoebaDeployTools
       end
 
       @kwargs[last_flag] = true if last_flag
+    end
+
+    def load_config
+      @config = ConfigParser.load('.amoeba/config')
     end
 
     def self.basecmd
