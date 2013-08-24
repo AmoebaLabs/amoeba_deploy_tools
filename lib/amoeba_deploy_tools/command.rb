@@ -27,15 +27,15 @@ class AmoebaDeployTools
 
       params = method(@subcmd).parameters
       args = [*@pargs].concat(params.flatten.include?(:keyrest) ? [@kwargs] : [])
-      status = params.count > 0 ? send(@subcmd, *args) : send(@subcmd)
+      @status = params.count > 0 ? send(@subcmd, *args) : send(@subcmd)
 
       self.class.after_hooks.each {|h| instance_eval &h }
     rescue => e
       warn "#{e.class}: #{e.message}", (@kwargs[:debug] ? e.bt : [])
-      status = 1
+      @status = 1
     ensure
-      status = case (status)
-        when Integer  then status
+      @status = case (@status)
+        when Integer  then @status
         when false    then 1
         else 0
       end
@@ -43,8 +43,16 @@ class AmoebaDeployTools
       if do_exit
         exit
       else
-        return status
+        return @status
       end
+    end
+
+    def subcmd
+      @subcmd
+    end
+
+    def status
+      @status
     end
 
     def parse_opts(argv)
