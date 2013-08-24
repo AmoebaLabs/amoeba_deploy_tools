@@ -1,16 +1,29 @@
 require 'spec_helper'
+require 'stringio'
 
 class AmoebaDeployTools
-  describe Amoeba do
-    context '#help' do
-      subject { Amoeba.new(:help) }
-      it { should raise_error SystemExit }
-    end
-  end
+  describe 'Amoeba Commands' do
+    def run_cmd(argv)
+      $stdout = StringIO.new
+      $stderr = StringIO.new
 
-  describe Amoeba::Node do
-    subject { described_class }
-    it { should eq(Amoeba::Node) }
-    it { should raise_error SystemExit }
+      @status = Amoeba.new(*argv).run(false)
+
+      @stdout = $stdout.tap {|f| f.seek(0) }.read
+      @stderr = $stderr.tap {|f| f.seek(0) }.read
+    ensure
+      $stdout = STDOUT
+      $stderr = STDERR
+    end
+
+    context 'amoeba' do
+      context 'help' do
+        subject! { run_cmd %w{amoeba help} }
+
+        it 'should exit with status code 1' do
+          expect(@status).to eq(1)
+        end
+      end
+    end
   end
 end

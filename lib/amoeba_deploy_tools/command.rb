@@ -1,30 +1,49 @@
 
 class AmoebaDeployTools
   class Command
-    def initialize(argv)
-      argv.push(:help) if argv.empty?
+    def self.new(*argv)
+      argv.unshift(:help) if argv.empty?
 
-      if self.class.subcommand_classes.include? argv.first.to_sym
-        return self.class.subcommand_classes[argv.shift.to_sym].new(argv)
+      if subcommand_classes.include? argv.first.to_sym
+        subcommand_classes[argv.shift.to_sym].new(*argv)
+      else
+        subcmd = :help
+        if subcommand_methods.include? argv.first.to_sym
+          subcmd = argv.shift.to_sym
+        end
+
+        super(subcmd, argv)
       end
+    end
 
-      @subcmd = self.class.subcommand_methods.include?(argv.first.to_sym) ? argv.shift.to_sym : :help
+    def initialize(subcmd, argv)
+      @subcmd = subcmd
       parse_opts(argv)
       load_config
+    end
 
+    def run(do_exit=true)
       self.class.before_hooks.each {|h| instance_eval &h }
+
       params = method(@subcmd).parameters
       args = [*@pargs].concat(params.flatten.include?(:keyrest) ? [@kwargs] : [])
       status = params.count > 0 ? send(@subcmd, *args) : send(@subcmd)
+
       self.class.after_hooks.each {|h| instance_eval &h }
     rescue => e
-      STDERR.puts "#{e.class}: #{e.message}", (@kwargs[:debug] ? e.bt : [])
+      warn "#{e.class}: #{e.message}", (@kwargs[:debug] ? e.bt : [])
       status = 1
     ensure
-      exit case (status)
+      status = case (status)
         when Integer  then status
         when false    then 1
         else 0
+      end
+
+      if do_exit
+        exit
+      else
+        return status
       end
     end
 
@@ -123,16 +142,6 @@ class AmoebaDeployTools
       subcommand_methods.merge subcommand_classes
     end
 
-    def help
-      STDERR.puts dedent(%{
-        Usage: #{self.class.basecmd} <command>
-
-        Possible commands:
-      }), indent(self.class.subcommands.keys.join("\n"))
-
-      false
-    end
-
     def self.before_hooks
       @before_hooks ||= []
     end
@@ -149,6 +158,16 @@ class AmoebaDeployTools
     def self.after(&blk)
       @after_hooks ||= []
       @after_hooks << blk
+    end
+
+    def help
+      warn dedent(%{
+        Usage: #{self.class.basecmd} <command>
+
+        Possible commands:
+      }), indent(self.class.subcommands.keys.join("\n"))
+
+      false
     end
   end
 end
