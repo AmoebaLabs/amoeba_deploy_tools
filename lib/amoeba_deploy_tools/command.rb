@@ -51,7 +51,7 @@ class AmoebaDeployTools
             last_flag = $1.to_sym
           end
         elsif last_flag
-          if @kwargs[$1.to_sym] == Array
+          if @kwargs[last_flag.to_sym] == Array
             @kwargs[last_flag.to_sym] << arg
           else
             @kwargs[last_flag.to_sym] = arg
@@ -68,8 +68,7 @@ class AmoebaDeployTools
 
     def load_config
       @config = Config.new
-      @config.options(filename: '.amoeba.yml')
-      @config.restore || @config
+      @config.tap {|c| c.restore(filename: '.amoeba.yml')}
     end
 
     def require_kitchen

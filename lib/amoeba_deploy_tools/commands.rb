@@ -2,15 +2,14 @@
 class AmoebaDeployTools
   class Amoeba < Command
     def init(url=nil)
-      if url
-        system %W{git clone #{url} .amoeba}
+      if url || (@config && url = @config.kitchen!.url)
+        %x{git clone #{url} .amoeba}
         @config.kitchen!.url = url
+        @config.save
       else
         STDERR.puts 'Creating new kitchen in .amoeba'
         Dir.mkdir '.amoeba'
       end
-
-      @config.save
     end
 
     def sync
@@ -19,32 +18,21 @@ class AmoebaDeployTools
     def update
     end
 
-    def config(*args, set: [], get: [])
+    def config(val=nil, set: nil, get: nil)
       require_kitchen
 
-      args.each do |a|
-        if a =~ /^(\w[-.\w]*)=(\w+)$/
-          @config[$1] = $2
-        else
-          puts @config[a]
-        end
+      if key = set and val
+        @config[key] = val
+        @config.save
+      elsif key = get || val
+        puts @config[key]
+      else
+        puts @config.flatten.map {|k,v| "#{k}=#{v}"}
       end
-
-      set.each do |k, v|
-        @config[k] = v
-      end
-
-      get.each do |k|
-        puts @config[k]
-      end
-
-      @config.save
     end
 
     class Node < Command
       def bootstrap
-        require_node
-
         knife_solo :prepare, 'bootstrap-version' => '11.4.2'
 
         refresh
@@ -57,8 +45,6 @@ class AmoebaDeployTools
       end
 
       def push
-        require_node
-
         knife_solo :cook
 
         pull
@@ -73,13 +59,17 @@ class AmoebaDeployTools
       end
 
       def list
-        Dir.glob(".amoeba/nodes/*.json").map {|n| File.basename(n)}
+        puts Dir.glob(".amoeba/nodes/*.json").map {|n| File.basename(n).sub(/\.json$/, '')}
       end
 
       def exec(cmd, *args)
+        require_node
+
+        system :ssh, node_cmd(port: '-p', ident: '-i'), *args, (cmd ? "'#{cmd}'" : '');
       end
 
       def shell
+        exec nil
       end
 
       def sudo(cmd, *args)
@@ -87,9 +77,15 @@ class AmoebaDeployTools
       end
 
       def knife_solo(cmd, *args)
-        if block_given?
-        else
-          system %W{knife solo --node-name #{@node.name}} + args + [@node.filename]
+        require_node
+
+        inside_kitchen do
+          knife_solo_cmd = %W{knife solo --node-name #{@node.name}} + args
+          if block_given?
+            with_tmpfile JSON.dump(yield) {|f| system *knife_solo_cmd, f }
+          else
+            system *knife_solo_cmd, @node.filename
+          end
         end
       end
     end
