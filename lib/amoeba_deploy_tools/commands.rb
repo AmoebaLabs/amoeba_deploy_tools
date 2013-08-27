@@ -59,7 +59,9 @@ class AmoebaDeployTools
       end
 
       def list
-        puts Dir.glob(".amoeba/nodes/*.json").map {|n| File.basename(n).sub(/\.json$/, '')}
+        inside_kitchen do
+          puts Dir.glob('nodes/*.json').sort.map {|n| File.basename(n).sub(/\.json$/, '')}
+        end
       end
 
       def exec(cmd, *args)

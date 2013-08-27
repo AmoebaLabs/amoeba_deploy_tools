@@ -1,5 +1,6 @@
 require 'tempfile'
 require 'pathname'
+require 'tmpdir'
 
 def with_tmpfile(content=nil)
   tmpf = Tempfile.new 'spec'
@@ -10,6 +11,14 @@ def with_tmpfile(content=nil)
 
   tmpf.unlink
   results
+end
+
+def in_tmpdir
+  Dir.mktmpdir do |tmpd|
+    Dir.chdir tmpd do
+      yield
+    end
+  end
 end
 
 def dedent(s)

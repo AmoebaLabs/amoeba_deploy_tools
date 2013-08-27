@@ -47,13 +47,9 @@ class AmoebaDeployTools
       end
     end
 
-    def subcmd
-      @subcmd
-    end
-
-    def status
-      @status
-    end
+    def cmd; self.class.cmd end
+    def subcmd; @subcmd end
+    def status; @status end
 
     def parse_opts(argv)
       @argv   = argv
@@ -104,6 +100,8 @@ class AmoebaDeployTools
       @kitchen = '.amoeba'
       unless Dir.exists? @kitchen
         raise 'Could not find amoeba kitchen'
+      else
+        @kitchen
       end
     end
 
