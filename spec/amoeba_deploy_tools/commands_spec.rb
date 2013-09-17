@@ -54,22 +54,20 @@ class AmoebaDeployTools
       end
 
       context 'when missing kitchen' do
-        before do
-          FileUtils.rm_rf '.amoeba'
-        end
+        before { FileUtils.rm_rf '.amoeba' }
 
         its (:status) { should eq(1) }
       end
     end
 
-    context %w{help} do
+    context %w(help) do
       its (:cmd) { should eq(:amoeba) }
       its (:subcmd) { should eq(:help) }
 
       its (:status) { should eq(1) }
     end
 
-    context %w{node list}, :require_kitchen do
+    context %w(node list), :require_kitchen do
       its (:cmd) { should eq(:node) }
       its (:subcmd) { should eq(:list) }
 
