@@ -1,12 +1,8 @@
 amoeba-deploy-tools
 ===================
 
-gem install amoeba-deploy-tools
+Usage
+-----
 
-Example .amoeba/config
-----------------------
-
-    [node "www.example.com"]
-        role = app-rails
-    [alias]
-        sudo = exec sudo
+    > gem install amoeba-deploy-tools
+    > amoeba init
