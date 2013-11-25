@@ -1,5 +1,4 @@
-
-class AmoebaDeployTools
+module AmoebaDeployTools
   class Command
     def self.new(*argv)
       argv.unshift(:help) if argv.empty?

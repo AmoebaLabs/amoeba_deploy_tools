@@ -1,5 +1,4 @@
-
-class AmoebaDeployTools
+module AmoebaDeployTools
   class Amoeba < Command
     def init(url=nil)
       if url || (@config && url = @config.kitchen!.url)

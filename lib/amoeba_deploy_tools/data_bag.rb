@@ -1,6 +1,6 @@
 require 'json'
 
-class AmoebaDeployTools
+module AmoebaDeployTools
   class DataBag
     def new(bag, kitchen)
       @bag_dir = "#{kitchen}/data_bags/#{bag}"

@@ -1,15 +1,26 @@
+# coding: utf-8
+lib = File.expand_path('../lib', __FILE__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+require 'amoeba_deploy_tools/version'
+
 Gem::Specification.new do |s|
-  s.name        = 'amoeba-deploy-tools'
-  s.version     = '0.0.0'
-  s.date        = '2013-07-12'
-  s.summary     = ''
-  s.description = <<-END
-  END
-  s.authors     = ['Hike Danakian']
-  s.email       = 'hike@amoe.ba'
-  s.files       = %w(
-    lib/amoeba/deploy_tools.rb
+  s.name          = 'amoeba-deploy-tools'
+  s.version       = AmoebaDeployTools::VERSION
+  s.authors       = ['Daniel Jabbour', 'Hike Danakian']
+  s.email         = 'sayhi@amoe.ba'
+  s.summary       = 'Easy Chef Solo / Knife operation with Amoeba Deploy Tools.'
+  s.description   = 'Easy Chef Solo / Knife operation with Amoeba Deploy Tools.'
+  s.homepage      = 'https://github.com/AmoebaConsulting/amoeba-deploy-tools'
+  s.license       = 'MIT'
+
+  s.files         = %w(
+    lib/amoeba_deploy_tools.rb
     bin/amoeba
   )
-  s.homepage    = 'https://github.com/AmoebaConsulting/amoeba-deploy-tools'
+  s.executables   = s.files.grep(%r{^bin/}) { |f| File.basename(f) }
+  s.test_files    = s.files.grep(%r{^(test|spec|features)/})
+  s.require_paths = ["lib"]
+
+  s.add_development_dependency "bundler", "~> 1.3"
+  s.add_development_dependency "rake"
 end

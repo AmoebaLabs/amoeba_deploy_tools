@@ -3,7 +3,7 @@ require 'json'
 require 'fileutils'
 require 'hashie/mash'
 
-class AmoebaDeployTools
+module AmoebaDeployTools
   class Config < Hashie::Mash
     def self.load(filename, **opts)
       new.tap {|c| c.options(filename: filename, **opts) }.restore
