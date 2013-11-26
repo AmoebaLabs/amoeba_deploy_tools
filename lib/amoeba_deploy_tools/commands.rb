@@ -1,14 +1,59 @@
+require 'highline/import'
+
 module AmoebaDeployTools
+
+  DEFAULT_SKELETON_REPO = 'https://github.com/AmoebaConsulting/amoeba-kitchen-skel.git'
+
   class Amoeba < Command
     def init(url=nil)
-      if url || (@config && url = @config.kitchen!.url)
-        %x{git clone #{url} .amoeba}
-        @config.kitchen!.url = url
-        @config.save
+      # Store the user-specified URL if it exists
+      user_url = url if url
+
+      # Check if we're in a git repo
+      if system('git rev-parse')
+        project_dir = %x{git rev-parse --show-toplevel}
+
+        kitchen_dir = File.expand_path("#{File.basename(project_dir).chop}-kitchen",
+                                    File.expand_path("..", project_dir))
       else
-        STDERR.puts 'Creating new kitchen in .amoeba'
-        Dir.mkdir '.amoeba'
+        kitchen_dir = File.expand_path("kitchen", ".")
       end
+
+      kitchen_dir = ask("Where should the new kitchen be located? (enter to accept default)") { |q| q.default = kitchen_dir }
+
+      if File.exist?(kitchen_dir)
+        STDERR.puts "Existing kitchen found! Will not overwrite."
+      else
+        # Copy (not clone) the repo if the URL isn't specified. If it is, obey the --skeleton param
+        copy = url ? @kwargs[:skeleton] : true
+
+        # If there was no specified URL, use default one
+        url ||= DEFAULT_SKELETON_REPO
+
+        git_opts = copy ?  '--depth 1' : ''
+
+        if system("git clone #{git_opts} #{url} #{kitchen_dir}")
+          if copy
+            git_dir = File.expand_path('.git', kitchen_dir)
+            if File.directory?(git_dir)
+              FileUtils.rm_rf(git_dir)
+            end
+            say_bold "New kitchen created at: #{kitchen_dir}. Please add it to version control"
+          else
+            say_bold "Kitchen from #{url} has been 'git clone'-ed into your kitchen directory"
+          end
+        else
+          raise "ERROR: Kitchen directory cannot be cloned from URL #{url}"
+        end
+      end
+
+      # Okay, the kitchen exists (one way or another)
+
+      @config.kitchen!.url  = user_url if user_url
+      @config.kitchen!.path = kitchen_dir.to_s
+      @config.save
+
+      say_bold "Saving ./amoeba.yml config file. We suggest you git ignore this."
     end
 
     def sync

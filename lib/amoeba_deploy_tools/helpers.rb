@@ -30,6 +30,10 @@ def indent(s, indent=4)
   s.gsub(/^/, ' ' * indent)
 end
 
+def say_bold(text)
+  say "<%= BOLD %>#{text}<%= CLEAR %>"
+end
+
 class Exception
   def bt
     backtrace.map do |l|

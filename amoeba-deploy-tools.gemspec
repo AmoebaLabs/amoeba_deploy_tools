@@ -26,4 +26,5 @@ Gem::Specification.new do |s|
   s.add_development_dependency "rspec", "~> 2.14.1"
 
   s.add_dependency "hashie", "~> 2.0.5"
+  s.add_dependency "highline", "~> 1.6.20"
 end
