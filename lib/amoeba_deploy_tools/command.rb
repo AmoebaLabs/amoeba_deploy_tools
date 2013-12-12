@@ -3,7 +3,7 @@ require "thor"
 module AmoebaDeployTools
   class Command < Thor
 
-    option :node, desc: 'name of the node you wish to operate on'
+    option :node, desc: 'name of the node you wish to operate on (set default in .amoeba.yml)'
 
     def initialize(args=[], options={}, config={})
       load_config
@@ -30,6 +30,11 @@ module AmoebaDeployTools
 
     no_commands do
       def invoke_command(command, *args)
+        # Ignore hooks on help commands
+        if command.name == 'help'
+          return super
+        end
+
         self.class.before_hooks.each {|h| instance_eval &h }
         retVal = super
         self.class.after_hooks.each {|h| instance_eval &h }
@@ -44,7 +49,7 @@ module AmoebaDeployTools
       def require_kitchen
         return @kitchen if @kitchen
 
-        if @amoebaConfig.kitchen && @amoebaConfig.kitchen.path
+        if @amoebaConfig.kitchen_.path
           @kitchen = @amoebaConfig.kitchen.path
         else
           @kitchen = '.'
@@ -63,8 +68,7 @@ module AmoebaDeployTools
       def require_node
         return @node if @node
 
-        node_name = options[:node]
-        node_name = @amoebaConfig.node.default if node_name.nil? && @amoebaConfig.node
+        node_name = options[:node] || @amoebaConfig.node_.default
         say_fatal 'ERROR: must specify --node or have a default node in your config file' unless node_name
 
         node_filename = "nodes/#{node_name}.json"

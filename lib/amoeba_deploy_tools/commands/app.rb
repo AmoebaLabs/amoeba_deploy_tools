@@ -7,10 +7,6 @@ module AmoebaDeployTools
       cap :deploy
     end
 
-    desc 'cap CMD', 'Run CMD through capistrano'
-    def cap(cmd)
-    end
-
     desc 'capfile', 'Generate Capfile for application'
     def capfile
       require_node
@@ -25,6 +21,11 @@ module AmoebaDeployTools
 
     desc 'ssh', 'SSHs to the application node, as the application user'
     def ssh
+    end
+
+    no_commands do
+      def cap(cmd)
+      end
     end
   end
 end
