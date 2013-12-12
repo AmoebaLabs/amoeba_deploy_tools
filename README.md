@@ -22,10 +22,12 @@ Otherwise, switch to a dir where you plan on running ADT from. And run:
 
     > amoeba init
 
-Now you've got a kitchen all ready to go. We recommend you add it to version control (git). We do
-not recommend you add the .amoeba.yml configuration file to git. Next you must create a node
-definition, and run a deploy. A node definition sits in the kitchen's `nodes/` directory. See this
-directory for a sample node you can copy / rename to make your own.
+The command will walk you through the process of initializing your kitchen. Now you've got a
+kitchen all ready to go. We recommend you add it to version control (git). We do not recommend you
+add the .amoeba.yml configuration file to git.
+
+Next you must create a node definition, and run a deploy. A node definition sits in the kitchen's
+`nodes/` directory. See this directory for a sample node you can copy / rename to make your own.
 
 Once you have a node defined, just run:
 
@@ -52,4 +54,12 @@ of our skeleton which you can add to version control later.
 
 ## Commands
 
-[todo]
+### amoeba init [url] [--skeleton]
+
+The URL is optional, but if specified will be used as the library's git repo. You can also specify
+`--skeleton`, which will use the specified URL as a skeleton, and make a copy of it (useful if you
+do not already have a Kitchen you wish to use in git, but want to start a new one based on the URL
+specified).
+
+The default URL is [Amoeba's skeleton](https://github.com/AmoebaConsulting/amoeba-kitchen-skel),
+which will be copied (as if `--skeleton` was specified).
