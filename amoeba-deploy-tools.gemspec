@@ -27,5 +27,4 @@ Gem::Specification.new do |s|
 
   s.add_dependency 'hashie',   '~> 2.0.5'
   s.add_dependency 'thor',     '~> 0.18.1'
-  s.add_dependency 'highline', '~> 1.6.20'
 end

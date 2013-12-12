@@ -1,5 +1,3 @@
-require 'highline/import'
-
 module AmoebaDeployTools
 
   DEFAULT_SKELETON_REPO = 'https://github.com/AmoebaConsulting/amoeba-kitchen-skel.git'
@@ -25,7 +23,7 @@ module AmoebaDeployTools
       kitchen_dir = default_kitchen_dir if kitchen_dir.empty?
 
       if File.exist?(kitchen_dir)
-        STDERR.puts 'Existing kitchen found! Will not overwrite.'
+        say 'Existing kitchen found! Will not overwrite.', :yellow
       else
         # Copy (not clone) the repo if the URL isn't specified. If it is, obey the --skeleton param
         copy = url ? options[:skeleton] : true
@@ -40,22 +38,22 @@ module AmoebaDeployTools
             if File.directory?(git_dir)
               FileUtils.rm_rf(git_dir)
             end
-            say "New kitchen created at: #{kitchen_dir}. Please add it to version control", :bold
+            say_bold "New kitchen created at: #{kitchen_dir}. Please add it to version control"
           else
-            say "Kitchen from #{url} has been 'git clone'-ed into your kitchen directory", :bold
+            say_bold "Kitchen from #{url} has been 'git clone'-ed into your kitchen directory"
           end
         else
-          raise "ERROR: Kitchen directory cannot be cloned from URL #{url}"
+          say_fatal "ERROR: Kitchen directory cannot be cloned from URL #{url}"
         end
       end
 
       # Okay, the kitchen exists (one way or another)
 
-      @amoebaConfig.kitchen!.url  = user_url if user_url
+      @amoebaConfig.kitchen!.url  = user_url if user_url && !options[:skeleton]
       @amoebaConfig.kitchen!.path = kitchen_dir.to_s
       @amoebaConfig.save
 
-      say 'Saving ./amoeba.yml config file. We suggest you `git ignore` this (contains local settings).', :bold
+      say_bold 'Saving ./amoeba.yml config file. We suggest you `git ignore` this (contains local settings).'
     end
 
     desc 'sync OPTS', 'Not yet implemented.'
@@ -66,7 +64,7 @@ module AmoebaDeployTools
     def update
     end
 
-    desc "app SUBCOMMAND ...ARGS", "manage the deployed application"
+    desc "app [COMMAND]", "Manage the deployed application (see `amoeba help app`)"
     subcommand "app", AmoebaDeployTools::App
 
   end

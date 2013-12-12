@@ -31,7 +31,12 @@ def indent(s, indent=4)
 end
 
 def say_bold(text)
-  say "<%= BOLD %>#{text}<%= CLEAR %>"
+  say text, :bold
+end
+
+def say_fatal(text)
+  say text, :red
+  exit 1
 end
 
 class Exception
