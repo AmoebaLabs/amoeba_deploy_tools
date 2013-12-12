@@ -24,3 +24,8 @@ doc/
 /cookbooks
 /tmp
 *.swp
+
+# RVM stuff we'll ignore for this gem for max flexibility
+.ruby-version
+.ruby-gemset
+.rvmrc
