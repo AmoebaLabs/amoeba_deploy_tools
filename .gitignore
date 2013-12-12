@@ -29,3 +29,6 @@ doc/
 .ruby-version
 .ruby-gemset
 .rvmrc
+
+# Ignore Gemfile.lock in this since it's a gem
+Gemfile.lock
