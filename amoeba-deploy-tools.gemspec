@@ -24,7 +24,9 @@ Gem::Specification.new do |s|
   s.add_development_dependency 'bundler', '~> 1.3'
   s.add_development_dependency 'rake'
   s.add_development_dependency 'rspec', '~> 2.14.1'
+  s.add_development_dependency 'pry', '~> 0.9.12.4'
 
-  s.add_dependency 'hashie',   '~> 2.0.5'
-  s.add_dependency 'thor',     '~> 0.18.1'
+  s.add_dependency 'hashie',  '~> 2.0.5'
+  s.add_dependency 'thor',    '~> 0.18.1'
+  s.add_dependency 'cocaine', '~> 0.5.3'
 end

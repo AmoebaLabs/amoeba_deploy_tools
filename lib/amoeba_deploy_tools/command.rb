@@ -1,9 +1,11 @@
-require "thor"
+require 'thor'
+require 'hashie/mash'
 
 module AmoebaDeployTools
   class Command < Thor
 
     option :node, desc: 'name of the node you wish to operate on (set default in .amoeba.yml)'
+    option :log, desc: 'log level to output (DEBUG, INFO, WARN (default), or ERROR)'
 
     def initialize(args=[], options={}, config={})
       load_config
@@ -29,6 +31,12 @@ module AmoebaDeployTools
     end
 
     no_commands do
+      def setup_logger
+        # Debug test TODO
+        level = Logger.const_get options[:log].upcase
+        AmoebaDeployTools::Logger.instance.level = level
+      end
+
       def invoke_command(command, *args)
         # Ignore hooks on help commands
         if command.name == 'help'
@@ -46,7 +54,7 @@ module AmoebaDeployTools
         @amoebaConfig.tap {|c| c.restore(filename: '.amoeba.yml')}
       end
 
-      def require_kitchen
+      def kitchen_path
         return @kitchen if @kitchen
 
         if @amoebaConfig.kitchen_.path
@@ -61,17 +69,19 @@ module AmoebaDeployTools
         @kitchen
       end
 
-      def inside_kitchen
-        Dir.chdir(require_kitchen) { yield }
+      def inside_kitchen(&block)
+        Bundler.with_clean_env do
+          Dir.chdir(kitchen_path) { block.call }
+        end
       end
 
-      def require_node
+      def node
         return @node if @node
 
         node_name = options[:node] || @amoebaConfig.node_.default
         say_fatal 'ERROR: must specify --node or have a default node in your config file' unless node_name
 
-        node_filename = "nodes/#{node_name}.json"
+        node_filename = File.join('nodes', "#{node_name}.json")
 
         inside_kitchen do
           if node_name.nil? || !File.exists?(node_filename)
@@ -81,6 +91,32 @@ module AmoebaDeployTools
           @node = Config.load(node_filename, format: :json)
           @node.tap {|n| n.filename = node_filename } if @node
         end
+      end
+
+      def deployment
+        return @deployment if @deployment
+
+        @deployment = Hashie::Mash.new
+        @deployment.deep_merge!(node.deployment) if node.deployment
+
+        return @deployment unless node.deployment_.provider
+
+        provider_filename = File.join('data_bags', 'providers', "#{node.deployment.provider}.json")
+        remote_node_filename = File.join('data_bags', 'nodes', "#{node.name}.json")
+
+        provider = remote_node = {}
+        inside_kitchen do
+          provider = Config.load(provider_filename, format: :json)
+          remote_node = Config.load(remote_node_filename, format: :json)
+        end
+
+        if provider
+          @deployment.deep_merge!(provider)
+        else
+          say_fatal 'ERROR: Provider data bag not found for node.'
+        end
+
+        @deployment.deep_merge!(remote_node || {}).deep_merge!(node.deployment)
       end
     end
   end

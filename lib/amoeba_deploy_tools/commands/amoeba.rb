@@ -64,8 +64,11 @@ module AmoebaDeployTools
     def update
     end
 
-    desc "app [COMMAND]", "Manage the deployed application (see `amoeba app help`)"
-    subcommand "app", AmoebaDeployTools::App
+    desc 'app [COMMAND]', 'Manage the deployed application (see `amoeba app help`)'
+    subcommand 'app', AmoebaDeployTools::App
+
+    desc 'node [COMMAND]', 'Deploy and configure nodes (see `amoeba node help`)'
+    subcommand 'node', AmoebaDeployTools::Node
 
   end
 end
