@@ -9,10 +9,9 @@ module AmoebaDeployTools
       to setup a node initially. Subsequent runs can use the `node push` command.
     LONGDESC
     def bootstrap
+      logger.info 'Starting `bootstrap`!'
+      refresh
       knife_solo :prepare, 'bootstrap-version' => '11.4.2'
-      #
-      #refresh
-      #
       #knife_solo :cook do
       #  { run_list: ['role[base]'] }
       #end
@@ -37,6 +36,37 @@ module AmoebaDeployTools
     def list
       inside_kitchen do
         puts Dir.glob('nodes/*.json').sort.map {|n| File.basename(n).sub(/\.json$/, '')}
+      end
+    end
+
+    desc 'refresh', 'Refresh data bags based on node config. Note this is normally run automatically.'
+    long_desc <<-DESC
+      Normally, you should not need to run `refresh`. It is run automatically before every `push` or
+      `bootstrap`. This command prepares data bags for the node. Presently, this is only used for
+      SSH keys. Thus, `refresh` will go through all the `authorized_keys` folders and generate
+      data_bags for each user. These data_bags are then used by the Chef Cookbooks during pushes.
+    DESC
+    def refresh
+      logger.info "Starting `refresh`!"
+      inside_kitchen do
+        Dir.glob('authorized_keys/*') do |user_dir|
+          if File.directory? user_dir
+            user_name = File.basename(user_dir)
+            logger.info "Processing SSH keys for user #{user_name}."
+            data_bag = Config.create(File.join('data_bags', "#{user_name}.json"), format: :json)
+            data_bag[:keys] = []
+
+            Dir.glob(File.join(user_dir, '*')) do |key_file|
+              logger.debug "Reading key file: #{key_file}"
+              data_bag[:keys] << File.read(key_file).strip
+            end
+
+            logger.info "Writing #{data_bag.options[:filename]}"
+            data_bag.save
+          else
+            logger.info "Ignoring file in authorized_keys (must be inside a directory): #{f}"
+          end
+        end
       end
     end
 

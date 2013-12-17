@@ -60,7 +60,7 @@ module AmoebaDeployTools
           @kitchen = config.kitchen.path
         else
           @kitchen = '.'
-          say 'NOTICE: Using local dir as kitchen path, no `.amoeba.yml` config found. Consider running `amoeba init`'
+          logger.warn 'Using local dir as kitchen path, no `.amoeba.yml` config found. Consider running `amoeba init`'
         end
 
         say_fatal 'ERROR: Could not find amoeba kitchen' unless Dir.exists? @kitchen
@@ -116,6 +116,10 @@ module AmoebaDeployTools
         end
 
         @deployment.deep_merge!(remote_node || {}).deep_merge!(node.deployment)
+      end
+
+      def logger
+        Logger.instance
       end
     end
   end

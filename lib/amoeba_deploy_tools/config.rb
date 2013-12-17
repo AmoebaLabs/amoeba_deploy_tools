@@ -9,6 +9,10 @@ module AmoebaDeployTools
       new.tap {|c| c.options(filename: filename, **opts) }.restore
     end
 
+    def self.create(filename, **opts)
+      new.tap {|c| c.options(filename: filename, **opts) }
+    end
+
     def options(**opts)
       @opts ||= { format: :yaml }
       @opts.merge! opts
