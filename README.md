@@ -52,6 +52,20 @@ gitignored if it contains sensitive information. The kitchen should be kept unde
 and you can either fork it prior to running `amoeba init` or you can let `amoeba init` make a copy
 of our skeleton which you can add to version control later.
 
+## Vagrant Testing
+
+Using Vagrant to test your nodes is easy! Just install Vagrant, run `amoeba init` and modify the
+kitchen's `Vagrantfile`, as necessary. Run `vagrant up` and watch as your VM comes alive.
+
+Then, you can ensure the provider is setup correctly (see `data_bags/providers/vagrant.json`). You
+must ensure the SSH port matches that in `Vagrantfile` (by default 2222), and you must point the
+provider to the SSH key Vagrant uses (if you just installed Vagrant, this is by default correct,
+`~/.vagrant.d/insecure_private_key`). You can, however, change the private key (for security
+reasons if you plan on distributing the VM or using it in production) by specifying an alternative
+one in the `Vagrantfile` configuration key `config.ssh.private_key_path` (see
+[the following documentation](http://docs-v1.vagrantup.com/v1/docs/config/ssh/private_key_path.html)
+on Vagrant for more information).
+
 ## Commands
 
 ### amoeba init [url] [--skeleton]
