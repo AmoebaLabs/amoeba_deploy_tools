@@ -3,6 +3,13 @@ module AmoebaDeployTools
   DEFAULT_SKELETON_REPO = 'https://github.com/AmoebaConsulting/amoeba-kitchen-skel.git'
 
   class Amoeba < Command
+
+    # Any "global" setup can be done here, as the "amoeba" command will always be initialized
+    def initialize(args=[], options={}, config={})
+      super
+      setup_logger
+    end
+
     desc 'init (url optional)', 'Setup Amoeba Deploy Tools (either by creating a new kitchen or locating an existing one)'
     method_options :skeleton => :boolean
     def init(url=nil)
@@ -49,9 +56,9 @@ module AmoebaDeployTools
 
       # Okay, the kitchen exists (one way or another)
 
-      @amoebaConfig.kitchen!.url  = user_url if user_url && !options[:skeleton]
-      @amoebaConfig.kitchen!.path = kitchen_dir.to_s
-      @amoebaConfig.save
+      config.kitchen!.url  = user_url if user_url && !options[:skeleton]
+      config.kitchen!.path = kitchen_dir.to_s
+      config.save
 
       say_bold 'Saving ./amoeba.yml config file. We suggest you `git ignore` this (contains local settings).'
     end
@@ -70,5 +77,17 @@ module AmoebaDeployTools
     desc 'node [COMMAND]', 'Deploy and configure nodes (see `amoeba node help`)'
     subcommand 'node', AmoebaDeployTools::Node
 
+    no_commands do
+      def setup_logger
+        # Default logging level is warn
+        level = AmoebaDeployTools::Logger::WARN
+        begin
+          level = AmoebaDeployTools::Logger.const_get options[:logLevel].upcase if options[:logLevel]
+        rescue NameError
+          say "WARNING: Invalid log level: #{options[:logLevel]}. Defaulting to WARN.", :red
+        end
+        AmoebaDeployTools::Logger.instance.level = level
+      end
+    end
   end
 end

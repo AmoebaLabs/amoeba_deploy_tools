@@ -5,10 +5,13 @@ module AmoebaDeployTools
   class Command < Thor
 
     option :node, desc: 'name of the node you wish to operate on (set default in .amoeba.yml)'
-    option :log, desc: 'log level to output (DEBUG, INFO, WARN (default), or ERROR)'
+    option :logLevel, desc: 'log level to output (DEBUG, INFO, WARN (default), or ERROR)'
 
+    # Note that all subcommands will inherit this class. This means any setup done in here
+    # will be duplicated if it runs at initialization (since the main command and subcommand are
+    # both evaluated at runtime). Thus, it's important not to put anything in the constructor.
+    # If you wish to setup any global state, do so in the Amoeba class initializer.
     def initialize(args=[], options={}, config={})
-      load_config
       super
     end
 
@@ -31,12 +34,6 @@ module AmoebaDeployTools
     end
 
     no_commands do
-      def setup_logger
-        # Debug test TODO
-        level = Logger.const_get options[:log].upcase
-        AmoebaDeployTools::Logger.instance.level = level
-      end
-
       def invoke_command(command, *args)
         # Ignore hooks on help commands
         if command.name == 'help'
@@ -49,7 +46,9 @@ module AmoebaDeployTools
         return retVal
       end
 
-      def load_config
+      def config
+        return @amoebaConfig if @amoebaConfig
+
         @amoebaConfig = Config.new
         @amoebaConfig.tap {|c| c.restore(filename: '.amoeba.yml')}
       end
@@ -57,8 +56,8 @@ module AmoebaDeployTools
       def kitchen_path
         return @kitchen if @kitchen
 
-        if @amoebaConfig.kitchen_.path
-          @kitchen = @amoebaConfig.kitchen.path
+        if config.kitchen_.path
+          @kitchen = config.kitchen.path
         else
           @kitchen = '.'
           say 'NOTICE: Using local dir as kitchen path, no `.amoeba.yml` config found. Consider running `amoeba init`'
@@ -78,7 +77,7 @@ module AmoebaDeployTools
       def node
         return @node if @node
 
-        node_name = options[:node] || @amoebaConfig.node_.default
+        node_name = options[:node] || config.node_.default
         say_fatal 'ERROR: must specify --node or have a default node in your config file' unless node_name
 
         node_filename = File.join('nodes', "#{node_name}.json")
