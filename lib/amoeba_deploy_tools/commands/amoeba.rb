@@ -8,6 +8,7 @@ module AmoebaDeployTools
     def initialize(args=[], options={}, config={})
       super
       setup_logger
+      setup_cocaine
     end
 
     desc 'init (url optional)', 'Setup Amoeba Deploy Tools (either by creating a new kitchen or locating an existing one)'
@@ -87,6 +88,16 @@ module AmoebaDeployTools
           say "WARNING: Invalid log level: #{options[:logLevel]}. Defaulting to WARN.", :red
         end
         AmoebaDeployTools::Logger.instance.level = level
+      end
+
+      def setup_cocaine
+        if options[:dry]
+          Cocaine::CommandLine.runner = Cocaine::CommandLine::FakeRunner.new
+        else
+          Cocaine::CommandLine.runner = AmoebaDeployTools::NoiseyCocaineRunner.new
+        end
+
+        Cocaine::CommandLine.logger = AmoebaDeployTools::Logger.instance
       end
     end
   end

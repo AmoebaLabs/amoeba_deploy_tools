@@ -2,8 +2,8 @@ require 'tempfile'
 require 'pathname'
 require 'tmpdir'
 
-def with_tmpfile(content=nil)
-  tmpf = Tempfile.new 'spec'
+def with_tmpfile(content=nil, name: 'amoebatmp' )
+  tmpf = Tempfile.new name
   tmpf.write content
   tmpf.close
 

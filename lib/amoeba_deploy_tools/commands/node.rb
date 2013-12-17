@@ -10,11 +10,13 @@ module AmoebaDeployTools
     LONGDESC
     def bootstrap
       logger.info 'Starting `bootstrap`!'
+
       refresh
       knife_solo :prepare, 'bootstrap-version' => '11.4.2'
-      #knife_solo :cook do
-      #  { run_list: ['role[base]'] }
-      #end
+
+      knife_solo :cook do |j|
+        j.run_list = ['role[base]']
+      end
       #
       #pull
     end
@@ -113,9 +115,12 @@ module AmoebaDeployTools
                                ident: '--identity-file') << ' '
         exec << "--node-name #{node.name}"
 
+        # If a block is specified, it means we have json in it, so let's resolve it
+        yield(options[:json] = Hashie::Mash.new) if block_given?
+
         # Now go through all the options specified and append them to args
         # Only, json is a special argument that causes some different behavior
-        json = options.delete(:json).to_json if options[:json]
+        json = JSON.dump(options.delete(:json)) if options[:json]
         args = ''
         options.each do |argument, value|
           args << " --#{argument} #{value}"
@@ -124,7 +129,7 @@ module AmoebaDeployTools
         inside_kitchen do
           # JSON will be written to a temp file and used in place of the node JSON file
           if json
-            with_tmpfile(json) do |file_name|
+            with_tmpfile(json, name: ['node', '.json']) do |file_name|
               knife_solo_cmd = Cocaine::CommandLine.new(exec, "#{args} #{file_name}")
               knife_solo_cmd.run
             end
