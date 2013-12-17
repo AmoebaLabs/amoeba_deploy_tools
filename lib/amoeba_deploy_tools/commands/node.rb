@@ -91,7 +91,6 @@ module AmoebaDeployTools
           args << " --#{argument} #{value}"
         end
 
-
         inside_kitchen do
           # JSON will be written to a temp file and used in place of the node JSON file
           if json
@@ -102,9 +101,6 @@ module AmoebaDeployTools
           else
             knife_solo_cmd = Cocaine::CommandLine.new(exec, "#{args} #{node.filename}")
             knife_solo_cmd.run
-            #exec << args << " #{node.filename}"
-            #puts "Exec: #{exec}."
-            #system exec
           end
         end
       end
