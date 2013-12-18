@@ -64,6 +64,10 @@ module AmoebaDeployTools
         end
       end
 
+      def data_bag(name)
+        DataBag.new(name, kitchen_path)
+      end
+
       def deployment
         return @deployment if @deployment
 
@@ -72,22 +76,10 @@ module AmoebaDeployTools
 
         return @deployment unless node.deployment_.provider
 
-        provider_filename = File.join('data_bags', 'providers', "#{node.deployment.provider}.json")
-        remote_node_filename = File.join('data_bags', 'nodes', "#{node.name}.json")
+        provider = data_bag(:providers)[node.deployment.provider]
+        remote_node = data_bag(:nodes)[node.name]
 
-        provider = remote_node = {}
-        inside_kitchen do
-          provider = Config.load(provider_filename, format: :json)
-          remote_node = Config.load(remote_node_filename, format: :json)
-        end
-
-        if provider
-          @deployment.deep_merge!(provider)
-        else
-          say_fatal 'ERROR: Provider data bag not found for node.'
-        end
-
-        @deployment.deep_merge!(remote_node || {}).deep_merge!(node.deployment)
+        @deployment.deep_merge!(provider).deep_merge!(remote_node).deep_merge!(node.deployment)
       end
 
       def logger

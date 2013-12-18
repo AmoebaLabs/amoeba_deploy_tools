@@ -18,8 +18,11 @@ module AmoebaDeployTools
       knife_solo :cook do |j|
         j.run_list = ['role[base]']
       end
-      #
-      #pull
+
+      pull
+
+      logger.warn 'Node bootstrapped successfully, you can now push to the node:'
+      logger.warn "\tamoeba node push --node #{options[:node]}\n"
     end
 
     desc 'push', 'Push any changes to the node'
@@ -34,7 +37,7 @@ module AmoebaDeployTools
 
       raw_json = ssh_run('sudo cat ~deploy/node.json', silent: true)
 
-      DataBag.new(:nodes, kitchen_path)[node.name] = JSON.load raw_json
+      data_bag(:nodes)[node.name] = JSON.load raw_json
     end
 
     desc 'list', 'Show available nodes in kitchen'
@@ -58,16 +61,16 @@ module AmoebaDeployTools
           if File.directory? user_dir
             user_name = File.basename(user_dir)
             logger.info "Processing SSH keys for user #{user_name}."
-            data_bag = Config.create(File.join('data_bags', "#{user_name}.json"), format: :json)
-            data_bag[:keys] = []
+            user_bag = data_bag(:authorized_keys)[user_name]
+            user_bag[:keys] = []
 
             Dir.glob(File.join(user_dir, '*')) do |key_file|
               logger.debug "Reading key file: #{key_file}"
-              data_bag[:keys] << File.read(key_file).strip
+              user_bag[:keys] << File.read(key_file).strip
             end
 
-            logger.info "Writing #{data_bag.options[:filename]}"
-            data_bag.save
+            logger.info "Writing #{user_bag.options[:filename]}"
+            user_bag.save
           else
             logger.info "Ignoring file in authorized_keys (must be inside a directory): #{f}"
           end

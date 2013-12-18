@@ -28,9 +28,7 @@ module AmoebaDeployTools
 
       return unless filename = options[:filename]
 
-      File.open(filename) do |fh|
-        self.clear.deep_merge! deserialize(fh.read)
-      end
+      self.clear.deep_merge! deserialize(File.read(filename))
 
       self
     rescue Errno::ENOENT
@@ -114,7 +112,7 @@ module AmoebaDeployTools
     end
 
     def deserialize(d)
-      @@formats[options[:format]].load(d)
+      @@formats[options[:format]].load(d) || {}
     end
   end
 end

@@ -10,11 +10,14 @@ module AmoebaDeployTools
     def []=(id, item)
       bag_item = DataBagItem.create(item_filename(id), format: :json)
       bag_item.clear.deep_merge!(item.to_hash)
+      bag_item.id = id
       bag_item.save
     end
 
     def [](id)
-      DataBagItem.load(item_filename(id), format: :json, create: true)
+      DataBagItem.load(item_filename(id), format: :json, create: true).tap do |i|
+        i.id = id
+      end
     end
 
     def item_filename(id)
