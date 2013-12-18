@@ -2,17 +2,26 @@ require 'json'
 
 module AmoebaDeployTools
   class DataBag
-    def new(bag, kitchen)
-      @bag_dir = "#{kitchen}/data_bags/#{bag}"
-      Dir.mkdir bag_dir unless Dir.exists? bag_dir
+    def initialize(bag, kitchen)
+      @bag_dir = File.join(kitchen, 'data_bags', bag.to_s)
+      Dir.mkdir @bag_dir unless Dir.exists? @bag_dir
     end
 
-    def []=(k, v)
-      File.open("#{@bag_dir}/#{k}.json", 'w').write(JSON.dump(v))
+    def []=(id, item)
+      bag_item = DataBagItem.create(item_filename(id), format: :json)
+      bag_item.clear.deep_merge!(item.to_hash)
+      bag_item.save
     end
 
-    def [](k)
-      JSON.load(File.read("#{@bag_dir}/#{k}.json"))
+    def [](id)
+      DataBagItem.load(item_filename(id), format: :json, create: true)
     end
+
+    def item_filename(id)
+      File.join(@bag_dir, "#{id}.json")
+    end
+  end
+
+  class DataBagItem < Config
   end
 end

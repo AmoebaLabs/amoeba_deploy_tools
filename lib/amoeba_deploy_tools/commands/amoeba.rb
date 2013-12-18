@@ -9,6 +9,10 @@ module AmoebaDeployTools
       super
       setup_logger
       setup_cocaine
+
+      # Fix JSON so it doesn't try to dereference json_class in JSON responses
+      # See http://blog.defunct.ca/2013/02/01/query-chef-server-api-from-ruby-script/
+      JSON.create_id = ''
     end
 
     desc 'init (url optional)', 'Setup Amoeba Deploy Tools (either by creating a new kitchen or locating an existing one)'

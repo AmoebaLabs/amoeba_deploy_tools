@@ -4,6 +4,8 @@ require 'hashie/mash'
 module AmoebaDeployTools
   class Command < Thor
 
+    include AmoebaDeployTools::Concerns::Hooks
+
     option :node, desc: 'name of the node you wish to operate on (set default in .amoeba.yml)'
     option :logLevel, desc: 'log level to output (DEBUG, INFO, WARN (default), or ERROR)'
     option :dry, type: :boolean, default: false, desc: 'Don\'t actually execute any chef commands (just show what would be run)'
@@ -16,42 +18,11 @@ module AmoebaDeployTools
       super
     end
 
-    def self.before_hooks
-      @before_hooks ||= []
-    end
-
-    def self.after_hooks
-      @after_hooks ||= []
-    end
-
-    def self.before(&blk)
-      @before_hooks ||= []
-      @before_hooks << blk
-    end
-
-    def self.after(&blk)
-      @after_hooks ||= []
-      @after_hooks << blk
-    end
-
     no_commands do
-      def invoke_command(command, *args)
-        # Ignore hooks on help commands
-        if command.name == 'help'
-          return super
-        end
-
-        self.class.before_hooks.each {|h| instance_eval &h }
-        retVal = super
-        self.class.after_hooks.each {|h| instance_eval &h }
-        return retVal
-      end
-
       def config
         return @amoebaConfig if @amoebaConfig
 
-        @amoebaConfig = Config.new
-        @amoebaConfig.tap {|c| c.restore(filename: '.amoeba.yml')}
+        @amoebaConfig = Config.load('.amoeba.yml')
       end
 
       def kitchen_path

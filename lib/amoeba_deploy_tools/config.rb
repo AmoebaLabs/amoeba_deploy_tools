@@ -6,11 +6,16 @@ require 'hashie/mash'
 module AmoebaDeployTools
   class Config < Hashie::Mash
     def self.load(filename, **opts)
-      new.tap {|c| c.options(filename: filename, **opts) }.restore
+      Config.new.tap do |c|
+        c.options(filename: filename, **opts)
+        c.restore
+      end
     end
 
     def self.create(filename, **opts)
-      new.tap {|c| c.options(filename: filename, **opts) }
+      Config.new.tap do |c|
+        c.options(filename: filename, create: true, **opts)
+      end
     end
 
     def options(**opts)
