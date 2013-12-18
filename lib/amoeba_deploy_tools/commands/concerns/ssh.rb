@@ -79,7 +79,9 @@ module AmoebaDeployTools
           ssh_cmd << " -o #{opt}"
         end
 
-        Cocaine::CommandLine.new('ssh', "#{ssh_cmd} '#{cmd}'", opts).run
+        ssh_cmd << " '#{cmd}'" if cmd && !cmd.empty?
+
+        Cocaine::CommandLine.new('ssh', ssh_cmd, opts).run
       end
     end
   end
