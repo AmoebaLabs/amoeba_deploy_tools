@@ -78,9 +78,9 @@ module AmoebaDeployTools
       end
     end
 
-    desc 'exec', 'Execute given command (via SSH) on node, as deploy user (has sudo)'
-    def exec(cmd, *args)
-      system :ssh, node_cmd(port: '-p', ident: '-i'), *args, (cmd ? "'#{cmd}'" : '');
+    desc 'exec "CMD"', 'Execute given command (via SSH) on node, as deploy user (can sudo)'
+    def exec(cmd)
+      ssh_run(cmd, interactive: true)
     end
 
     desc 'ssh', 'SSHs to the node as the deploy user (can sudo)'
@@ -91,7 +91,7 @@ module AmoebaDeployTools
     desc 'sudo "CMD"', 'Executes the given command as root on the node'
     def sudo(cmd)
       # pull args off of cmd
-      exec(:sudo, cmd, *args)
+      exec("sudo #{cmd}")
     end
   end
 end

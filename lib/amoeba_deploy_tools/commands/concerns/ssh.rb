@@ -63,11 +63,12 @@ module AmoebaDeployTools
         end
       end
 
-      def ssh_run(cmd, silent: false)
+      def ssh_run(cmd, silent: false, interactive: false)
         opts = {}
         opts[:runner] = Cocaine::CommandLine::BackticksRunner.new if silent
+        opts[:runner] = AmoebaDeployTools::InteractiveCocaineRunner.new if interactive
 
-        cmd_line = "ssh #{node_host_args(port: '-p', ident: '-i')}"
+        ssh_cmd = node_host_args(port: '-p', ident: '-i')
 
         [ 'Compression=yes',
           'DSAAuthentication=yes',
@@ -75,10 +76,10 @@ module AmoebaDeployTools
           'StrictHostKeyChecking=no',
           'UserKnownHostsFile=/dev/null'
         ].each do |opt|
-          cmd_line << " -o #{opt}"
+          ssh_cmd << " -o #{opt}"
         end
 
-        Cocaine::CommandLine.new(cmd_line, ':remote_command', opts).run(remote_command: cmd)
+        Cocaine::CommandLine.new('ssh', "#{ssh_cmd} '#{cmd}'", opts).run
       end
     end
   end
