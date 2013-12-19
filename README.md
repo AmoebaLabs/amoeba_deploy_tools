@@ -41,6 +41,10 @@ cookbooks you create in `site-cookbooks`, you can push those changes by running:
 
     > amoeba node push <node-name>
 
+Finally to setup Capistrano, you need only add the following to your existing Capfile:
+
+    require 'amoeba_deploy_tools/capistrano'
+
 For a full list of commends, see below.
 
 ## Detailed Information
