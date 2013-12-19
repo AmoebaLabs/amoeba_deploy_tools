@@ -35,7 +35,7 @@ module AmoebaDeployTools
           logger.warn 'Using local dir as kitchen path, no `.amoeba.yml` config found. Consider running `amoeba init`'
         end
 
-        say_fatal 'ERROR: Could not find amoeba kitchen' unless Dir.exists? @kitchen
+        say_fatal "ERROR: Could not find amoeba kitchen: #{@kitchen}" unless Dir.exists? @kitchen
 
         @kitchen
       end
