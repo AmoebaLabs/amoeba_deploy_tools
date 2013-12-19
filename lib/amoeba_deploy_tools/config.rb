@@ -26,6 +26,7 @@ module AmoebaDeployTools
     def options(opts=nil)
       @opts ||= { format: :yaml }
       @opts.merge! opts if opts
+      @opts
     end
 
     def restore(opts=nil)
