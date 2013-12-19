@@ -5,25 +5,30 @@ require 'hashie/mash'
 
 module AmoebaDeployTools
   class Config < Hashie::Mash
-    def self.load(filename, **opts)
+    def self.load(filename, opts={})
+      opts[:filename] = filename
       Config.new.tap do |c|
-        c.options(filename: filename, **opts)
-        c.restore
+        c.restore(opts)
       end
     end
 
-    def self.create(filename, **opts)
+    def self.create(filename, opts={})
+      opts.merge!({
+        filename: filename,
+        create: true
+      })
+
       Config.new.tap do |c|
-        c.options(filename: filename, create: true, **opts)
+        c.options(opts)
       end
     end
 
-    def options(**opts)
+    def options(opts=nil)
       @opts ||= { format: :yaml }
-      @opts.merge! opts
+      @opts.merge! opts if opts
     end
 
-    def restore(**opts)
+    def restore(opts=nil)
       options(opts)
 
       return unless filename = options[:filename]
@@ -35,7 +40,7 @@ module AmoebaDeployTools
       FileUtils.touch(filename) and retry if options[:create]
     end
 
-    def save(**opts)
+    def save(opts=nil)
       options(opts)
 
       return unless filename = options[:filename]

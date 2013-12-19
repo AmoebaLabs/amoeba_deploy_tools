@@ -2,7 +2,9 @@ require 'tempfile'
 require 'pathname'
 require 'tmpdir'
 
-def with_tmpfile(content=nil, name: 'amoebatmp' )
+def with_tmpfile(content=nil, options={} )
+  name = options[:name] || 'amoebatmp'
+
   tmpf = Tempfile.new name
   tmpf.write content
   tmpf.close

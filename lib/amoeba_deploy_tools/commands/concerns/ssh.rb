@@ -63,10 +63,15 @@ module AmoebaDeployTools
         end
       end
 
-      def ssh_run(cmd, silent: false, interactive: false)
+      def ssh_run(cmd, options)
+        options.reverse_merge!({
+          silent: false,
+          interactive: false
+        })
+
         opts = {}
-        opts[:runner] = Cocaine::CommandLine::BackticksRunner.new if silent
-        opts[:runner] = AmoebaDeployTools::InteractiveCocaineRunner.new if interactive
+        opts[:runner] = Cocaine::CommandLine::BackticksRunner.new if options[:silent]
+        opts[:runner] = AmoebaDeployTools::InteractiveCocaineRunner.new if options[:interactive]
 
         ssh_cmd = node_host_args(port: '-p', ident: '-i')
 
