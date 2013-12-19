@@ -29,6 +29,12 @@ module AmoebaDeployTools
       }
     end
 
+    class SimpleFormatter < ::Logger::Formatter
+      def call(severity, time, progname, msg)
+        "%s\n" % msg2str(msg)
+      end
+    end
+
     def format_message(level, *args)
       if Logger::Colors::SCHEMA[@logdev.dev]
         color = begin
@@ -41,6 +47,12 @@ module AmoebaDeployTools
       else
         super(level, *args)
       end
+    end
+
+    def initialize(logdev)
+      super
+
+      @formatter = SimpleFormatter.new
     end
 
     @@instance = self.new(STDOUT)

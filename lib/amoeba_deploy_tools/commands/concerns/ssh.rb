@@ -64,10 +64,10 @@ module AmoebaDeployTools
       end
 
       def ssh_run(cmd, options)
-        options.reverse_merge!({
+        options = {
           silent: false,
           interactive: false
-        })
+        }.merge!(options)
 
         opts = {}
         opts[:runner] = Cocaine::CommandLine::BackticksRunner.new if options[:silent]

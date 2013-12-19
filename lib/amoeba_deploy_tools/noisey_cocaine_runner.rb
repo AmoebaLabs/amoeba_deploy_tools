@@ -18,7 +18,7 @@ module AmoebaDeployTools
           # Use PTY.spawn so we don't buffer anything. r will contain the output (stdout & stderr)
           PTY.spawn(command) do |r,w,pid|
             begin
-              r.each { |line| Cocaine::CommandLine.logger.debug line; buffer << line }
+              r.each { |line| Cocaine::CommandLine.logger.debug line.strip; buffer << line }
             rescue Errno::EIO
               # Output is done
             end
