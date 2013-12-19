@@ -31,7 +31,7 @@ Next you must create a node definition, and run a deploy. A node definition sits
 
 Once you have a node defined, just run:
 
-    > amoeba node bootstrap <node-name>
+    > amoeba node bootstrap --node <node-name>
 
 ... and the node will be provisioned. After provisioning, the node's metadata will be stored in the
 `data_bags` folder. Our skeleton kitchen includes a basenode recipe that creates a deployment user
@@ -39,13 +39,13 @@ on the destination box, and disables root access. This user's name will be cache
 databag and used for subsequent operations to the box. Now, as you make changes to the node, or any
 cookbooks you create in `site-cookbooks`, you can push those changes by running:
 
-    > amoeba node push <node-name>
+    > amoeba node push --node <node-name>
 
 Finally to setup Capistrano, you need only add the following to your existing Capfile:
 
     require 'amoeba_deploy_tools/capistrano'
 
-For a full list of commends, see below.
+For a full list of commends, run `amoeba help` or see below.
 
 ## Detailed Information
 
