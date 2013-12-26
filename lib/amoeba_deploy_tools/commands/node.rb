@@ -9,11 +9,12 @@ module AmoebaDeployTools
       `bootstrap` will load Chef and the `basenode` recipe on the node. This is effectively the way
       to setup a node initially. Subsequent runs can use the `node push` command.
     LONGDESC
+    option :version, desc: 'Chef version to bootstrap', default: '11.8.2'
     def bootstrap
       logger.info 'Starting `bootstrap`!'
 
       refresh
-      knife_solo :prepare, 'bootstrap-version' => '11.4.2'
+      knife_solo :prepare, 'bootstrap-version' => options[:version]
 
       knife_solo :cook do |j|
         j.run_list = ['role[base]']
