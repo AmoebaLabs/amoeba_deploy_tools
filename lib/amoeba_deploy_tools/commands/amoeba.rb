@@ -84,12 +84,16 @@ module AmoebaDeployTools
 
     no_commands do
       def setup_logger
-        # Default logging level is warn
-        level = AmoebaDeployTools::Logger::WARN
+        # Default logging level is warn. You can change this in your .amoeba.yml config
+        # by setting `logLevel` or by passing --logLevel option
+        level = 'WARN'
+        level = config.logLevel if config.logLevel
+        level = options[:logLevel] if options[:logLevel]
         begin
-          level = AmoebaDeployTools::Logger.const_get options[:logLevel].upcase if options[:logLevel]
+          level = AmoebaDeployTools::Logger.const_get level.upcase
         rescue NameError
-          say "WARNING: Invalid log level: #{options[:logLevel]}. Defaulting to WARN.", :red
+          say "WARNING: Invalid log level: #{level}. Defaulting to WARN.", :red
+          level = AmoebaDeployTools::Logger::WARN
         end
         AmoebaDeployTools::Logger.instance.level = level
       end

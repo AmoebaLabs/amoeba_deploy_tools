@@ -46,10 +46,12 @@ module AmoebaDeployTools
         end
       end
 
+      # The node must be specified unless you set a default one. You can specify it with the
+      # `--node [name]` option, or by setting `[:node][:default]` in your `.amoeba.yml``
       def node
         return @node if @node
 
-        node_name = options[:node] || config.node_.default
+        node_name = options[:node] || config.node_.default_
         say_fatal 'ERROR: must specify --node or have a default node in your config file' unless node_name
 
         node_filename = File.join('nodes', "#{node_name}.json")
