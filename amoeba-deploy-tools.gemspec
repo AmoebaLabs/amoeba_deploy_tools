@@ -25,10 +25,15 @@ Gem::Specification.new do |s|
 
   s.add_development_dependency 'bundler', '~> 1.3'
   s.add_development_dependency 'rake'
-  s.add_development_dependency 'rspec', '~> 2.14.1'
-  s.add_development_dependency 'pry', '~> 0.9.12.4'
+  s.add_development_dependency 'rspec',   '~> 2.14.1'
+  s.add_development_dependency 'pry',     '~> 0.9.12.4'
 
-  s.add_dependency 'hashie',  '~> 2.0.5'
-  s.add_dependency 'thor',    '~> 0.18.1'
-  s.add_dependency 'cocaine', '~> 0.5.3'
+  s.add_dependency 'hashie',              '~> 2.0.5'
+  s.add_dependency 'thor',                '~> 0.18.1'
+  s.add_dependency 'cocaine',             '~> 0.5.3'
+
+  s.add_dependency 'chef',                '~> 11.8.0'
+  s.add_dependency 'librarian-chef',      '~> 0.0.2'
+  s.add_dependency 'knife-solo',          '~> 0.4.0'
+  s.add_dependency 'knife-solo_data_bag', '~> 0.4.0'
 end
