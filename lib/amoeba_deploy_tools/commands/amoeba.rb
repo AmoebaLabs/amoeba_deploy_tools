@@ -82,6 +82,9 @@ module AmoebaDeployTools
     desc 'node [COMMAND]', 'Deploy and configure nodes (see `amoeba node help`)'
     subcommand 'node', AmoebaDeployTools::Node
 
+    desc 'key [COMMAND]', 'Manage private keys (see `amoeba key help`)'
+    subcommand 'key', AmoebaDeployTools::Key
+
     no_commands do
       def setup_logger
         # Default logging level is warn. You can change this in your .amoeba.yml config

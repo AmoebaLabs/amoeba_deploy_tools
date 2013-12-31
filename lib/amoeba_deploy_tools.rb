@@ -15,4 +15,5 @@ require 'amoeba_deploy_tools/command'
 
 require 'amoeba_deploy_tools/commands/app'
 require 'amoeba_deploy_tools/commands/node'
+require 'amoeba_deploy_tools/commands/key'
 require 'amoeba_deploy_tools/commands/amoeba'
