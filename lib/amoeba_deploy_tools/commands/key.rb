@@ -13,9 +13,19 @@ module AmoebaDeployTools
                                        runner: Cocaine::CommandLine::BackticksRunner.new).run
 
         unless File.directory?('private_keys')
-          logger.warn 'Creating private_key directory in kitchen (does not exist!). Be sure to gitignore it.'
+          logger.warn 'Creating private_key directory in kitchen (does not exist!).'
           FileUtils.mkdir_p('private_keys')
           FileUtils.touch(File.join('private_keys', '.gitkeep'))
+
+          unless File.open('.gitignore').lines.any? { |line| line.chomp =~ /private_keys/ }
+            File.open('.gitignore', 'a') do |f|
+              f.write "\n"
+              f.puts '# For security, ignore private keys (used to encrypt things like certs)'
+              f.puts 'private_keys/*.key'
+              f.write "\n"
+            end
+          end
+
         end
 
         filename = File.join("private_keys", "#{name}.key")
