@@ -3,10 +3,7 @@ module AmoebaDeployTools
 
     desc 'create', 'Create a private_key (used to encrypt secret data_bags like SSL certs)'
     def create(name=nil)
-      say_fatal 'You must specify a key name to create (i.e. `amoeba key create [myname]`)' unless name
-      unless name =~ /^[a-zA-Z0-9\_\-]+$/
-        say_fatal 'Your key name must only contain alphanums, dashes, and underscores'
-      end
+      validate_chef_id!(name)
 
       inside_kitchen do
         key = Cocaine::CommandLine.new('openssl', "rand -base64 512 | tr -d '\\r\\n'",

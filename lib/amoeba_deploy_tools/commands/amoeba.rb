@@ -85,6 +85,9 @@ module AmoebaDeployTools
     desc 'key [COMMAND]', 'Manage private keys (see `amoeba key help`)'
     subcommand 'key', AmoebaDeployTools::Key
 
+    desc 'ssl [COMMAND]', 'Manage SSL certificates (see `amoeba ssl help`)'
+    subcommand 'ssl', AmoebaDeployTools::Ssl
+
     no_commands do
       def setup_logger
         # Default logging level is warn. You can change this in your .amoeba.yml config

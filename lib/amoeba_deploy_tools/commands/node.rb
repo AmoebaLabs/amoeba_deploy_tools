@@ -14,9 +14,9 @@ module AmoebaDeployTools
       logger.info 'Starting `bootstrap`!'
 
       refresh
-      knife_solo :prepare, 'bootstrap-version' => options[:version]
+      knife_solo :prepare, 'bootstrap-version' => options[:version], ssh: true
 
-      knife_solo :cook do |j|
+      knife_solo :cook, ssh: true do |j|
         j.run_list = ['role[base]']
       end
 
@@ -28,7 +28,7 @@ module AmoebaDeployTools
 
     desc 'push', 'Push any changes to the node'
     def push
-      knife_solo :cook
+      knife_solo :cook, ssh: true
       pull
     end
 

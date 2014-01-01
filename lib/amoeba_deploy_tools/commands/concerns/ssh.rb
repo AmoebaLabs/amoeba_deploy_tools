@@ -33,10 +33,13 @@ module AmoebaDeployTools
         say_fatal 'ERROR: Node must have a name defined' unless node.name
 
         exec = "bundle exec knife solo #{cmd.to_s} "
-        exec << node_host_args(port: '--ssh-port',
-                               config: '--ssh-config-file',
-                               ident: '--identity-file') << ' '
-        exec << "--no-host-key-verify --node-name #{node.name}"
+
+        if options[:ssh]
+          exec << node_host_args(port: '--ssh-port',
+                                 config: '--ssh-config-file',
+                                 ident: '--identity-file') << ' '
+          exec << "--no-host-key-verify --node-name #{node.name}"
+        end
 
         # If a block is specified, it means we have json in it, so let's resolve it
         yield(options[:json] = Hashie::Mash.new) if block_given?

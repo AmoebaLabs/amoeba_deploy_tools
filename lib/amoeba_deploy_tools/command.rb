@@ -87,6 +87,15 @@ module AmoebaDeployTools
       def logger
         Logger.instance
       end
+
+      def validate_chef_id!(name)
+        say_fatal "You must specify a key name for your data bag id." unless name
+        unless name =~ /^[a-zA-Z0-9\_\-]+$/
+          say_fatal "Your data bag name must only contain alphanums, dashes, and underscores. `#{name}` is invalid!"
+        end
+        return true
+      end
+
     end
   end
 end
