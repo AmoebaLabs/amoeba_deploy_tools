@@ -32,21 +32,43 @@ module AmoebaDeployTools
       def knife_solo(cmd, options={})
         say_fatal 'ERROR: Node must have a name defined' unless node.name
 
+        # Ensure json is a hashie
+        json = options.delete(:json) || Hashie::Mash.new
+
+        # If a block is specified, it means we have json in it, so let's resolve it
+        yield(json) if block_given?
+
+        # Ensure JSON for the node is set. It is either provided by the calling party, or we use the
+        # node file's definitions.
+        if json.empty?
+          json.deep_merge!(node)
+        end
+
         exec = "bundle exec knife solo #{cmd.to_s} "
 
-        if options[:ssh]
+        if options.delete(:ssh)
           exec << node_host_args(port: '--ssh-port',
                                  config: '--ssh-config-file',
                                  ident: '--identity-file') << ' '
           exec << "--no-host-key-verify --node-name #{node.name}"
         end
 
-        # If a block is specified, it means we have json in it, so let's resolve it
-        yield(options[:json] = Hashie::Mash.new) if block_given?
+        if options.delete(:include_private_key)
+          private_key = node.private_key || 'default'
+          private_key = "private_keys/#{private_key}.key"
+          inside_kitchen do
+            if File.exist?(private_key)
+              private_key = File.read(private_key)
+            else
+              private_key = nil
+            end
+          end
+
+          # Stick the private key into a our custom JSON (to be appended to the node)
+          json.private_key_raw = private_key if private_key
+        end
 
         # Now go through all the options specified and append them to args
-        # Only, json is a special argument that causes some different behavior
-        json = JSON.dump(options.delete(:json)) if options[:json]
         args = ''
         options.each do |argument, value|
           args << " --#{argument} #{value}"
@@ -54,13 +76,8 @@ module AmoebaDeployTools
 
         inside_kitchen do
           # JSON will be written to a temp file and used in place of the node JSON file
-          if json
-            with_tmpfile(json, name: ['node', '.json']) do |file_name|
-              knife_solo_cmd = Cocaine::CommandLine.new(exec, "#{args} #{file_name}")
-              knife_solo_cmd.run
-            end
-          else
-            knife_solo_cmd = Cocaine::CommandLine.new(exec, "#{args} #{node.filename}")
+          with_tmpfile(JSON.dump(json), name: ['node', '.json']) do |file_name|
+            knife_solo_cmd = Cocaine::CommandLine.new(exec, "#{args} #{file_name}")
             knife_solo_cmd.run
           end
         end
