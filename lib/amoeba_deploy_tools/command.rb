@@ -54,11 +54,10 @@ module AmoebaDeployTools
         node_name = options[:node] || config.node_.default_
         say_fatal 'ERROR: must specify --node or have a default node in your config file' unless node_name
 
-        node_filename = File.join('nodes', "#{node_name}.json")
-
         inside_kitchen do
+          node_filename = File.expand_path(File.join('nodes', "#{node_name}.json"))
           if node_name.nil? || !File.exists?(node_filename)
-            say_fatal 'ERROR: Could not find node JSON file.'
+            say_fatal "ERROR: Could not find node JSON file: #{node_filename}"
           end
 
           @node = Config.load(node_filename, format: :json)

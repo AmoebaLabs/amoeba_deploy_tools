@@ -6,7 +6,7 @@ require 'hashie/mash'
 module AmoebaDeployTools
   class Config < Hashie::Mash
     def self.load(filename, opts={})
-      opts[:filename] = filename
+      opts[:filename] = File.expand_path filename
       Config.new.tap do |c|
         c.restore(opts)
       end
@@ -14,7 +14,7 @@ module AmoebaDeployTools
 
     def self.create(filename, opts={})
       opts.merge!({
-        filename: filename,
+        filename: File.expand_path(filename),
         create: true
       })
 
@@ -38,7 +38,16 @@ module AmoebaDeployTools
 
       self
     rescue Errno::ENOENT
+      @new_file = true
       FileUtils.touch(filename) and retry if options[:create]
+    end
+
+    def reload!
+      restore(filename: options[:filename])
+    end
+
+    def new_file?
+      !!@new_file
     end
 
     def save(opts=nil)

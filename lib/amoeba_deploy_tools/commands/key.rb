@@ -5,35 +5,17 @@ module AmoebaDeployTools
     def create(name=nil)
       validate_chef_id!(name)
 
-      inside_kitchen do
-        key = Cocaine::CommandLine.new('openssl', "rand -base64 512 | tr -d '\\r\\n'",
-                                       runner: Cocaine::CommandLine::BackticksRunner.new).run
+      key = Cocaine::CommandLine.new('openssl', "rand -base64 512 | tr -d '\\r\\n'",
+                                     runner: Cocaine::CommandLine::BackticksRunner.new).run
+      config.private_keys![name] = key
 
-        unless File.directory?('private_keys')
-          logger.warn 'Creating private_key directory in kitchen (does not exist!).'
-          FileUtils.mkdir_p('private_keys')
-          FileUtils.touch(File.join('private_keys', '.gitkeep'))
+      logger.debug "Saving key to `.amoeba.yml` config"
 
-          unless File.open('.gitignore').lines.any? { |line| line.chomp =~ /private_keys/ }
-            File.open('.gitignore', 'a') do |f|
-              f.write "\n"
-              f.puts '# For security, ignore private keys (used to encrypt things like certs)'
-              f.puts 'private_keys/*.key'
-              f.write "\n"
-            end
-          end
-
-        end
-
-        filename = File.join("private_keys", "#{name}.key")
-
-        logger.debug "Writing key to file: #{filename}"
-
-        File.open(filename, 'w') do |file|
-          file.write(key)
-        end
-
+      if config.new_file?
+        say_fatal "Cannot create new key, no .amoeba.yml file found! Please run `amoeba init`"
       end
+
+      config.save
     end
 
   end

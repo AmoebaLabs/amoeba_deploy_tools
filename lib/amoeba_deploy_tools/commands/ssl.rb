@@ -12,8 +12,9 @@ module AmoebaDeployTools
       logger.debug "Starting SSL import!"
       validate_chef_id!(cert_name)
 
-      json_data = { id: cert_name }
+      private_key = options[:privateKey]
 
+      json_data = { id: cert_name }
       [:key, :cert, :ca].each do |c|
         # read certificates before we get in the kitchen
         if File.exist? options[c]
@@ -24,20 +25,18 @@ module AmoebaDeployTools
         end
       end
 
+      # Ensure key exists
+      unless config.private_keys_[private_key]
+        logger.warn "Private key missing: #{options[:privateKey]}, running `amoeba key create #{options[:privateKey]}`"
+        AmoebaDeployTools::Key.new.create(options[:privateKey])
+      end
+
       inside_kitchen do
-        key_file = File.join('private_keys', "#{options[:privateKey]}.key")
-
-        # Ensure key exists
-        unless File.exist? key_file
-          logger.warn "Private key missing: #{options[:privateKey]}, running `amoeba key create #{options[:privateKey]}`"
-          AmoebaDeployTools::Key.new.create(options[:privateKey])
-        end
-
         # Import to certs databag
         with_tmpfile( json_data.to_json, name: [cert_name, '.json'] ) do |file_name|
           knife_solo "data bag create certs #{cert_name}",
                      'json-file' => file_name,
-                     'secret-file' => key_file
+                     'secret' => "'#{config.reload!.private_keys[private_key]}'"
         end
       end
     end

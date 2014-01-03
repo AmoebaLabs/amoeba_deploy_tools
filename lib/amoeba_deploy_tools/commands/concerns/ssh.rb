@@ -55,14 +55,7 @@ module AmoebaDeployTools
 
         if options.delete(:include_private_key)
           private_key = node.private_key || 'default'
-          private_key = "private_keys/#{private_key}.key"
-          inside_kitchen do
-            if File.exist?(private_key)
-              private_key = File.read(private_key)
-            else
-              private_key = nil
-            end
-          end
+          private_key = config.private_keys_[private_key]
 
           # Stick the private key into a our custom JSON (to be appended to the node)
           json.private_key_raw = private_key if private_key
