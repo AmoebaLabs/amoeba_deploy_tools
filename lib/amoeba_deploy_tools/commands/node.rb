@@ -60,6 +60,8 @@ module AmoebaDeployTools
     def refresh
       logger.info "Starting `refresh`!"
       inside_kitchen do
+        # Handle authorized_keys
+        logger.debug '# Refreshing authorized_keys'
         Dir.glob('authorized_keys/*') do |user_dir|
           if File.directory? user_dir
             user_name = File.basename(user_dir)
@@ -77,6 +79,13 @@ module AmoebaDeployTools
           else
             logger.info "Ignoring file in authorized_keys (must be inside a directory): #{f}"
           end
+        end
+
+        logger.debug '# Ensuring bundle is up to date'
+        # Handle bundler, ensure it's up to date
+        unless system('bundle check > /dev/null 2>&1')
+          logger.info "Bundle out of date! Running bundle update..."
+          Cocaine::CommandLine.new('bundle', 'install').run
         end
       end
     end
