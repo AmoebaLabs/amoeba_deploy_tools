@@ -61,6 +61,9 @@ module AmoebaDeployTools
           json.private_key_raw = private_key if private_key
         end
 
+        opts = {}
+        opts[:runner] = AmoebaDeployTools::InteractiveCocaineRunner.new if options.delete(:interactive)
+
         # Now go through all the options specified and append them to args
         args = ''
         options.each do |argument, value|
@@ -70,7 +73,7 @@ module AmoebaDeployTools
         inside_kitchen do
           # JSON will be written to a temp file and used in place of the node JSON file
           with_tmpfile(JSON.dump(json), name: ['node', '.json']) do |file_name|
-            knife_solo_cmd = Cocaine::CommandLine.new(exec, "#{args} #{file_name}")
+            knife_solo_cmd = Cocaine::CommandLine.new(exec, "#{args} #{file_name}", opts)
             knife_solo_cmd.run
           end
         end

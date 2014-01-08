@@ -65,6 +65,10 @@ module AmoebaDeployTools
         end
       end
 
+      def remote_node
+        data_bag(:nodes)[node.name]
+      end
+
       def data_bag(name)
         DataBag.new(name, kitchen_path)
       end
@@ -75,12 +79,13 @@ module AmoebaDeployTools
         @deployment = Hashie::Mash.new
         @deployment.deep_merge!(node.deployment) if node.deployment
 
-        return @deployment unless node.deployment_.provider
+        provider = data_bag(:providers)[node.deployment.provider] if node.deployment_.provider
 
-        provider = data_bag(:providers)[node.deployment.provider]
-        remote_node = data_bag(:nodes)[node.name]
+        @deployment.deep_merge!(provider) if provider
+        @deployment.deep_merge!(remote_node.deployment) if remote_node.deployment
+        @deployment.deep_merge!(node.deployment)
 
-        @deployment.deep_merge!(provider).deep_merge!(remote_node).deep_merge!(node.deployment)
+        return @deployment
       end
 
       def logger

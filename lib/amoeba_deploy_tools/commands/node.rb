@@ -10,20 +10,30 @@ module AmoebaDeployTools
       to setup a node initially. Subsequent runs can use the `node push` command.
     LONGDESC
     option :version, desc: 'Chef version to bootstrap', default: '11.8.2'
+    option :interactive, desc: 'Run interactively (useful for entering passwords)', type: :boolean, default: false
     def bootstrap
       logger.info 'Starting `bootstrap`!'
 
       refresh
-      knife_solo :prepare, 'bootstrap-version' => options[:version], ssh: true
+      knife_solo :prepare, 'bootstrap-version' => options[:version], ssh: true, interactive: options[:interactive]
 
-      knife_solo :cook, ssh: true do |j|
+      knife_solo :cook, ssh: true, include_private_key: true, interactive: options[:interactive] do |j|
         j.run_list = ['role[base]']
       end
+
+      force_deployer
 
       pull
 
       logger.warn 'Node bootstrapped successfully, you can now push to the node:'
       logger.warn "\tamoeba node push --node #{options[:node]}\n"
+    end
+
+    desc 'force_deployer', 'Forces the deploy user to be `deploy` or that specified in node.json'
+    def force_deployer
+      logger.info 'Starting force_deployer'
+      data_bag(:nodes)[node.name] = { deployment: { user: node.depoyment_.user || 'deploy' } }
+      puts "Remote node: #{remote_node}"
     end
 
     desc 'push', 'Push any changes to the node'
@@ -37,10 +47,10 @@ module AmoebaDeployTools
     desc 'pull', 'Pull down node state and store in local node databag (run automatically after push)'
     def pull
       logger.info 'Starting `pull`!'
+      force_deployer unless remote_node.deployment_.user
 
       raw_json = ssh_run('sudo cat ~deploy/node.json', silent: true)
-
-      data_bag(:nodes)[node.name] = JSON.load raw_json
+      data_bag(:nodes)[node.name]  = JSON.load raw_json
     end
 
     desc 'list', 'Show available nodes in kitchen'
