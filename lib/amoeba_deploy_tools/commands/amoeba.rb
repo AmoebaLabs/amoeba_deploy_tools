@@ -93,8 +93,8 @@ module AmoebaDeployTools
         # Default logging level is warn. You can change this in your .amoeba.yml config
         # by setting `logLevel` or by passing --logLevel option
         level = 'WARN'
-        level = config.logLevel if config.logLevel
-        level = options[:logLevel] if options[:logLevel]
+        level = config.log_level if config.log_level
+        level = options[:'log-level'] if options[:'log-level']
         begin
           level = AmoebaDeployTools::Logger.const_get level.upcase
         rescue NameError

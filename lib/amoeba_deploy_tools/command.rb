@@ -7,7 +7,7 @@ module AmoebaDeployTools
     include AmoebaDeployTools::Concerns::Hooks
 
     option :node, desc: 'name of the node you wish to operate on (set default in .amoeba.yml)'
-    option :logLevel, desc: 'log level to output (DEBUG, INFO, WARN (default), or ERROR)'
+    option :'log-level', desc: 'log level to output (DEBUG, INFO, WARN (default), or ERROR)'
     option :dry, type: :boolean, default: false, desc: 'Don\'t actually execute any chef commands (just show what would be run)'
 
     # Note that all subcommands will inherit this class. This means any setup done in here
