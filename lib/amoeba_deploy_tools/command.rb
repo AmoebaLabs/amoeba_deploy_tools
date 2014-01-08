@@ -74,8 +74,6 @@ module AmoebaDeployTools
       end
 
       def deployment
-        return @deployment if @deployment
-
         @deployment = Hashie::Mash.new
         @deployment.deep_merge!(node.deployment) if node.deployment
 

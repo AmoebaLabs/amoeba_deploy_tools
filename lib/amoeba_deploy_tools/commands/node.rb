@@ -33,7 +33,6 @@ module AmoebaDeployTools
     def force_deployer
       logger.info 'Starting force_deployer'
       data_bag(:nodes)[node.name] = { deployment: { user: node.depoyment_.user || 'deploy' } }
-      puts "Remote node: #{remote_node}"
     end
 
     desc 'push', 'Push any changes to the node'
