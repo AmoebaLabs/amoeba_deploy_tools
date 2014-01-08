@@ -49,7 +49,22 @@ module AmoebaDeployTools
       force_deployer unless remote_node.deployment_.user
 
       raw_json = ssh_run('sudo cat ~deploy/node.json', silent: true)
+      # Store the remote_node databag
       data_bag(:nodes)[node.name]  = JSON.load raw_json
+
+      # Now check and see if we are missing the private_key on this node
+      private_key = remote_node.private_key || 'default'
+      private_key_raw = remote_node.private_key_raw
+
+      if private_key_raw
+        # If we don't already have the private_key in our config, let's add it
+        unless config.private_keys_[private_key]
+          logger.info "Saving new private key `#{private_key}` to config file..."
+          config.private_keys![private_key] = private_key_raw
+          config.save
+        end
+      end
+
     end
 
     desc 'list', 'Show available nodes in kitchen'
