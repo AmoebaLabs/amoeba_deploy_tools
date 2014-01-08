@@ -4,7 +4,7 @@ $LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
 require 'amoeba_deploy_tools/version'
 
 Gem::Specification.new do |s|
-  s.name          = 'amoeba-deploy-tools'
+  s.name          = 'amoeba_deploy_tools'
   s.version       = AmoebaDeployTools::VERSION
   s.authors       = ['Daniel Jabbour', 'Hike Danakian']
   s.email         = 'sayhi@amoe.ba'
