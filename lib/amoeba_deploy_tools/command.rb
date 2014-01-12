@@ -41,7 +41,11 @@ module AmoebaDeployTools
       end
 
       def inside_kitchen(&block)
-        Bundler.with_clean_env do
+        if defined?(Bundler)
+          Bundler.with_clean_env do
+            Dir.chdir(kitchen_path) { block.call }
+          end
+        else
           Dir.chdir(kitchen_path) { block.call }
         end
       end
