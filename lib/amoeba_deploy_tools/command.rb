@@ -82,8 +82,11 @@ module AmoebaDeployTools
         @deployment.deep_merge!(node.deployment) if node.deployment
 
         provider = data_bag(:providers)[node.deployment.provider] if node.deployment_.provider
-
         @deployment.deep_merge!(provider) if provider
+
+        # Remove ident if we have a remote node, as host keys should be managed by us
+        @deployment.delete('ident') if remote_node
+
         @deployment.deep_merge!(remote_node.deployment) if remote_node.deployment
         @deployment.deep_merge!(node.deployment)
 
