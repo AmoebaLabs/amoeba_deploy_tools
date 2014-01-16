@@ -1,6 +1,4 @@
 # coding: UTF-8
-require 'pty'
-
 module AmoebaDeployTools
   class InteractiveCocaineRunner
     def self.supported?
