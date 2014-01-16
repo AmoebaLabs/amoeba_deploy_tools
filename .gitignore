@@ -32,3 +32,6 @@ doc/
 
 # Ignore Gemfile.lock in this since it's a gem
 Gemfile.lock
+
+# Ignore our own config files
+.amoeba.yml
