@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
   s.email         = 'sayhi@amoe.ba'
   s.summary       = 'Easy Chef Solo / Knife operation with Amoeba Deploy Tools.'
   s.description   = 'Easy Chef Solo / Knife operation with Amoeba Deploy Tools.'
-  s.homepage      = 'https://github.com/AmoebaConsulting/amoeba-deploy-tools'
+  s.homepage      = 'https://github.com/AmoebaLabs/amoeba_deploy_tools'
   s.license       = 'MIT'
 
   s.files         = `git ls-files`.split("\n")

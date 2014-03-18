@@ -6,6 +6,6 @@ else
   require 'amoeba_deploy_tools/capistrano/recipes'
 
   Capistrano::Configuration.instance(:must_exist).load do
-    after   'deploy:finalize_update',  'amoeba_deploy_tools:symlink_configs'
+    after   'deploy:finalize_update',  'amoeba:symlink_configs'
   end
 end

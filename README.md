@@ -7,7 +7,7 @@ often setting up a chef "kitchen" can be tedious. Additionally, we believe in su
 deploys. That is, we don't like to maintain and run a separate chef server just to manage our boxes.
 
 ADT integrates a number of other tools (`chef-solo`, and `librarian`, and others) and we provide a
-[skeleton Kitchen](http://github.com/AmoebaConsulting/amoeba-kitchen-skel), so you can fork our
+[skeleton Kitchen](http://github.com/AmoebaLabs/amoeba-kitchen-skel), so you can fork our
 kitchen, install this gem, and deploy a node in minutes.
 
 ## Short introduction
@@ -79,5 +79,75 @@ The URL is optional, but if specified will be used as the library's git repo. Yo
 do not already have a Kitchen you wish to use in git, but want to start a new one based on the URL
 specified).
 
-The default URL is [Amoeba's skeleton](https://github.com/AmoebaConsulting/amoeba-kitchen-skel),
+The default URL is [Amoeba's skeleton](https://github.com/AmoebaLabs/amoeba-kitchen-skel),
 which will be copied (as if `--skeleton` was specified).
+
+
+## Capistrano Integration
+
+When building a node using ADT, you are expected to deploy to it using Capistrano. To make things
+easier, we have included some capistrano recipies to assist with your deployment. Note that we
+currently only support Capistrano 2.x, as there were significant changes in 3.x that make it
+incompatible. If you use 3.x, you can still use ADT, but you'll have to symlink the database.yml
+yourself (as well as figure out how to deploy your application initially). We will gladly accept a
+pull request if someone wishes to share it.
+
+For those using Capistrano 2.x, you can do the following to use ADT quickly:
+
+First, `capify` your application, which generates a `Capfile` that basically loads `config/deploy.rb`
+
+Add to your `config/deploy.rb` the following contents:
+
+```ruby
+#### 3rd party recipes
+require "bundler/capistrano"
+require "amoeba_deploy_tools/capistrano"
+
+#### Variables
+set :application,      "Your App Name"
+set :repository,       "[insert git:// url]"
+set :scm,              :git
+
+#### We will use multi-stage to support several enviornments (in case you use more than one). Be
+#### sure to include all envs you will deploy servers for (normally just QA and Production).
+set :stages,           %w(production qa)
+set :default_stage,    "qa"
+
+require "capistrano/ext/multistage"
+
+set :user,             "yourappuser"
+set :deploy_to,        "/home/yourappuser"
+set :deploy_via,       :remote_cache
+
+set :use_sudo,         false
+set :ssh_options,      { forward_agent: true }
+default_run_options[:pty] = true
+
+set :branch, 'master' unless exists?(:branch)
+
+#### Custom recipes
+# Insert any custom recipes
+
+```
+
+### Customized Capistrano Recipes
+
+The line that reads `require "amoeba_deploy_tools/capistrano"` will automagically symlink your
+`database.yml` and allow you to run a `cap amoeba:bootstrap` command, which is used to deploy your
+application for the first time.
+
+#### amoeba:bootstrap
+
+This is used to bootstrap a "cold" server. Run it once after you first bootstrap your server node
+using ADT. It will perform the following functions:
+
+ * update
+ * db_setup
+ * migrate
+ * start
+
+#### deploy:restart
+
+The `cap deploy:restart` command is overridden by ADT so that Passenger's restart method can be used
+(which doesn't require sudo or restarting a process). Instead it just touches tmp/restart.txt in the
+project folder). Feel free to override this behavior if you'd like.
